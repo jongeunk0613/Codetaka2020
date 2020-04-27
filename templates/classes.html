@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+   <div id="classCreate">
+      {% csrf_token %}
+      <label>New class name</label>
+      <input id="classCreateName" type="text"></input>
+      <button id="btnClassCreate" onclick="createClass()">Create</button>
+   </div>
+   <div id="classList">
+      <table id="classTable" class="table">
+         <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Name</th>
+              <th scope="col">User</th>
+              <th scope="col">Created</th>
+            </tr>
+         </thead>
+         <tbody>
+            {% for class in classList %}
+               <tr>
+                 <td id="class{{forloop.counter}}" scope="row">{{forloop.counter}}</td>
+                 <td><a href="{% url 'openClass' class.name %}">{{class.name}}</a></td>
+                 <td>{{class.user}}</td>
+                 <td>{{class.timestamp}}</td>
+               </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+   </div>
+
+<script>
+   var table = document.getElementById("classTable");
+   var lastrow = table.rows[table.rows.length -1];
+   var lastNumber = 0;
+   if (table.rows.length > 1){
+      var firstcell = lastrow.cells[0];
+      lastNumber = Number(firstcell.innerHTML);
+   }
+   
+   const classSocket = new WebSocket('ws://' + window.location.host + "/ws/class/" + "{{user}}" + '/');
+   
+   classSocket.onmessage = function(e){
+      var data = JSON.parse(e.data);
+      
+      var newRow = table.insertRow(-1);
+      var numberCell = newRow.insertCell(0);
+      var nameCell = newRow.insertCell(1);
+      var userCell = newRow.insertCell(2);
+      var timeCell = newRow.insertCell(3);
+      numberCell.innerHTML = Number(lastNumber) + 1;
+      nameCell.innerHTML = data['className'];
+      userCell.innerHTML = data['userName'];
+      var time = data['timestamp'];
+      var year = time.substring(3,7);
+      var month = time.substring(8,10);
+      var day = time.substring(11,13);
+      var monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      timeCell.innerHTML = monthName[month-1] + " " + day + ", " + year;
+      lastNumber += 1;
+   };
+
+   classSocket.onclose = function(e){
+      alert("SOCKET CLOSED");
+   };
+
+   function createClass(){
+      event.preventDefault();
+      
+      classSocket.send(JSON.stringify({
+         'className': $("#classCreateName").val(),
+         'userName': "{{user}}",
+         
+      }));
+      $("#classCreateName").value = "";
+   }
+
+</script>
+   
+{% endblock %}
+

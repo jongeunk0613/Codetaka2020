@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% csrf_token %}
+
+{% block title%}
+   Mainpage
+{% endblock %}
+
+{% block content %}
+   <div id="mainScreen">
+      
+      <div id="secDir">
+         <div id="upload">
+             <form method="post" enctype="multipart/form-data">
+               <p id="upload_notice">Choose a file to upload</p>
+                  {% csrf_token %}
+                  {{form.content}}
+                  <div id="submit">
+                     <button id="uploadSubmit" type="submit">Upload</button>
+                  </div>
+            </form>
+         </div>
+         
+         <div id="dirTree">
+            {% if sclist %}
+               {% for sc in sclist %}
+               <a href="{% url 'openSC' className sc.id %}">{{sc.content.name}}</a><br>
+               {% endfor %}
+            {% endif %}
+         </div>
+         
+      </div>
+      
+      <div id="secCode">
+         <div id="showContent">
+            <div id="showLineNum" unselectable="on">
+               <p unselectable="on" >
+                  {% for i in range %}
+                     {{i}}<br>
+                  {% endfor %}
+               </p>
+            </div>
+            <pre id="code"></pre>
+         </div>
+      </div>
+
+      <div id="secChat">
+         X <input id="X" disabled><br>
+         Y <input id="Y" disabled><br>
+         P <input id="P" disabled>
+         <!--<textarea id="try" style="width: 100%; height: 80%;"></textarea>-->
+         <div id="chatLog"></div><br>
+         <textarea id="chatInput"></textarea>
+         <input id="chatSubmit" type="button" value="Send"></input>
+      </div>
+   </div>
+
+<script>
+   
+   var x = 0;
+   var y = 0;
+   var id = 0;
+   var htmlEntities = [
+      [/&amp;/g, "&"],
+      [/&lt;/g, "<"],
+      [/&gt;/g, ">"],
+      [/&quot;/g, "\""],
+      [/&#x27;/g, "\'"],
+   ];
+   var commentsByLine[{{range}}] 
+   
+   window.onload = prepare;
+
+   function prepare() {
+      highlightSC();
+      //loadComments();
+   }
+
+   window.addEventListener('mousedown', function(e){
+      x = e.target.closest('.line').offsetLeft + e.target.closest('.line').offsetWidth;
+      y = e.target.offsetTop;
+      
+      X.value = x;
+      Y.value = y;
+   });
+   window.addEventListener('mouseup', function(e){
+      getSelectedText(e);
+   });
+
+   // HIGHLIGHT SC AND DISPLAY
+   function highlightSC() {
+      var content = "{{js_fcontent}}";
+      content = content.substring(6, content.length-6);
+      
+      //SYNTAX HIGHLIGHTING
+      var highlighted = hljs.highlightAuto(content).value;
+      for (var i = 0; i < htmlEntities.length; i++){
+         highlighted = highlighted.replace(htmlEntities[i][0], htmlEntities[i][1]);
+      }
+      
+      // ADD NODES BY LINE
+      var bylines = highlighted.split("\n");
+      for (var i = 0; i < bylines.length; i++){
+         var oneline = bylines[i];
+         bylines[i] = `<span class='line' data-lineNumber='${i+1}'>` + oneline + "</span>";
+      }
+      var line = bylines.join("\n");
+      document.getElementById("code").innerHTML = line;
+      
+      // ADD IDS TO EACH NODE
+      var grandels = $("#code").find("span");
+      var n = 1;
+      for (var i = 0; i < grandels.length; i++){
+         grandels[i].id = `el${n}`;
+         n += 1;
+      }
+   }
+
+   //COMMENT OBJECT
+   const Comment = {
+      id: 0,
+      seltxt: '',
+      anchorNodeID: 0,
+      anchorOffset: 0,
+      focusNodeID: 0,
+      focusOffset: 0,
+      posX: 0,
+      posY: 0,
+      text: '',
+      createComment() {
+         var id = this.id;
+         var seltxt = this.seltxt;
+         var anchorNodeID = this.anchorNodeID;
+         var anchorOffset = this.anchorOffset;
+         var focusNodeID = this.focusNodeID;
+         var focusOffset = this.focusOffset;
+         var posX = this.posX;
+         var posY = this.posY;
+         var text = this.text;
+         var commentForm = document.createElement("div");
+         commentForm.className = "commentForm";
+         commentForm.id = `comment${this.id}Form`;
+         var commentContent = document.createElement("textarea");
+         commentContent.innerHTML = text;
+         commentContent.id = `comment${this.id}Text`;
+         commentContent.className = "commentContent";
+         commentContent.setAttribute("type", "text");
+         commentContent.setAttribute("id", `comment${this.id}Content`);
+         commentForm.appendChild(commentContent);
+         var commentCancelBtn = document.createElement("input");
+         commentCancelBtn.className = "commentCancelBtn";
+         commentCancelBtn.setAttribute("id", "commentCancelBtn");
+         commentCancelBtn.type = "button";
+         commentCancelBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            cancelComment(id);
+         });
+         commentCancelBtn.setAttribute("value", "Cancel");
+         commentForm.appendChild(commentCancelBtn);
+         var commentSaveBtn = document.createElement("input");
+         commentSaveBtn.className = "commentSaveBtn";
+         commentSaveBtn.setAttribute("id", "commentSaveBtn");
+         commentSaveBtn.type = "button";
+         commentSaveBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            saveComment(id, seltxt, anchorNodeID, anchorOffset, focusNodeID, focusOffset, posX, posY, text);
+         });
+         commentSaveBtn.setAttribute("value", "Save");
+         commentForm.appendChild(commentSaveBtn);
+         
+         var icon = document.createElement("div");
+         icon.className = "commentIcon";
+         icon.id = `comment${this.id}`;
+         icon.appendChild(commentForm);
+         //icon.css({"position": "absolute", "left": `${this.posX}px`, "top": `${this.posY}px`});
+         //CLICK TOGGLE - OPEN & CLOSE
+         icon.addEventListener('click', function(e){
+            if ($(`#${e.target.id}`).hasClass("commentIcon") == true){
+               if ($(`#${e.target.id}`).hasClass("open")){
+                  $(`#${e.target.id}`).removeClass("open");
+                  $(`#${e.target.id}Form`).css("visibility","hidden");
+               } else {
+                  $(`#${e.target.id}`).addClass("open");
+                  $(`#${e.target.id}Form`).css("visibility","visible");
+               }
+            }
+         });
+         
+         return icon;
+      }
+   }
+
+   // GET SELECTION
+   function getSelectedText(e) {
+      if(window.getSelection) {
+         var seltxt = window.getSelection();
+         if (seltxt.toString().length > 0 && e.target.closest("#code").id == "code"){
+            
+            var newComment = Object.create(Comment);
+            newComment.id = id +1;
+            id = id + 1;
+            newComment.seltxt = seltxt.toString();
+            newComment.anchorNodeID = seltxt.anchorNode.parentNode.id;
+            newComment.anchorOffset = seltxt.anchorOffset;
+            newComment.focusNodeID = seltxt.focusNode.parentNode.id;
+            newComment.focusOffset = seltxt.focusOffset;
+            newComment.posX = x;
+            newComment.posY = y;
+            
+            var newCommentIcon = newComment.createComment();
+            document.getElementById("showContent").prepend(newCommentIcon);
+            $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
+         }
+      }
+   }
+   
+   
+</script>
+
+{% endblock %}

@@ -1,0 +1,227 @@
+/*-----VARIBLES-----*/
+:root{
+   --navBarHeight: 54px;
+}
+
+/*-----BASE.HTML-----*/
+#container{
+   /*border-style: solid;*/
+   position: relative;
+   height: calc(100vh - var(--navBarHeight));
+   width: 100vw;
+   
+   margin: 0 auto;
+}
+
+#navbar {
+   background-color: #0F4C81;
+}
+
+/*-----SIGN IN-----*/
+#signin{
+   position: absolute;
+   top: 15%;
+   left: 32.5%;
+   padding: 2%;
+   width: 35%;
+   height: 50%;
+   border: 1px solid #0F4C81;
+}
+
+#btnSignin{
+   position: absolute;
+   top: 66%;
+   width: 88.5%;
+   height: 10%;
+   
+   background-color: #0F4C81;
+   color: white;
+   border-radius: 5px;
+}
+
+#singin_noAccount{
+   position: absolute;
+   top: 84%;
+   font-size: 14px;
+   display: flex;
+   flex-direction: row;
+   justify-content: center;
+   width: 88.5%;
+}
+
+#singin_noAccount a{
+   position: relative;
+   left: 10px;
+}
+
+.fields input{
+   border: none;
+   border-bottom: 1px solid grey;
+}
+
+/*-----SIGN UP-----*/
+
+#signup{
+   position: absolute;
+   top: 15%;
+   left: 32.5%;
+   padding: 2%;
+   width: 35%;
+   height: 70%;
+   border: 1px solid #0F4C81;
+}
+
+.fields label{
+   
+}
+
+.fields input{
+   width: 100%;
+}
+
+#btnSignup{
+   position: absolute;
+   top: 76%;
+   width: 88.5%;
+   height: 7%;
+   
+   background-color: #0F4C81;
+   color: white;
+   border-radius: 5px;
+}
+
+#btnSignup:hover{
+   background-color: #3a709e;
+   box-shadow: 2px 2px 5px 0px rgba(189,185,189,1)
+}
+
+#singup_haveAccount{
+   position: absolute;
+   top: 89%;
+   font-size: 14px;
+   display: flex;
+   flex-direction: row;
+   justify-content: center;
+   width: 88.5%;
+}
+
+#singup_haveAccount a{
+   position: relative;
+   left: 10px;
+}
+
+#errors{
+   position: absolute;
+   top: 25%;
+   left: 69%;
+   width: 25%;
+   height: 50%;
+}
+
+#errors label{
+   font-size: 12px;
+}
+
+.fieldErrors{
+   font-size: 10px;
+   color: red;
+}
+
+#usernameErrorLabel{
+   position: absolute;
+   top: 1%;
+}
+
+#usernameError{
+   position: absolute;
+   top: 8%;
+}
+
+#emailErrorLabel{
+   position: absolute;
+   top: 22%;
+}
+
+#emailError{
+   position: absolute;
+   top: 30%;
+}
+
+#password2ErrorLabel{
+   position: absolute;
+   top: 43%;
+}
+
+#password2Error{
+   position: absolute;
+   top: 52%;
+}
+
+.fields input{
+   border: none;
+   border-bottom: 1px solid grey;
+}
+
+/*-----CLASS LIST-----*/
+#classList{
+   border: 1px solid #ddd;
+   width: 80%;
+   height: 70%;
+}
+
+
+/*-----MAINPAGE.HTML-----*/
+#mainScreen{
+   position: relative;
+   display: flex;
+   flex-direction: row;
+   align-content: flex-start;
+   height: 100%;
+   width: 100%;
+
+   border: 1px solid #ddd;
+   border-color: yellow;
+}
+
+#user{
+   position: absolute;
+   top: 50%;
+   left: 50%;
+}
+
+/*-----DIRECTORY SECTION-----*/
+#secDir{
+   height: 100%;
+   width: 20%;
+   
+   word-break: break-all;
+
+   border: 1px solid #ddd;
+   border-color: blue;
+}
+
+/*-----CODE SECTION-----*/
+#secCode{
+   padding: 10px 10px 10px 10px;
+   
+   height: 100%;
+   width: 60%;
+   z-index: 2;
+   
+   border: 1px solid #ddd;
+   border-color: green;
+}
+
+/*-----CHAT SECTION-----*/
+#secChat{
+   height: 100%;
+   width: 25%;
+   
+   overflow-y: scroll;
+   border: 1px solid #ddd;
+   border-color: red;
+   
+   overflow-y: scroll;
+   height: 100%;
+   
+}

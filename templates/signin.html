@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+   <div id="signin">
+      <h2 id="title">Sign In</h2>
+      <form method="post">
+         {% csrf_token %}
+         {% for field in form %}
+         <p class="fields">
+            <label for="id_{{field.name}}">{{field.name}}</label>
+            {{field}}
+         </p>
+         {% endfor %}
+         <button id="btnSignin" type="submit">Sign in</button>
+      </form>
+      <div id="singin_noAccount">
+         <p>Don't have an acount?</p><a href="{% url 'signUp' %}">Sign up</a>
+      </div>
+      {% if error %}
+      <p id="signinError">
+         {{error}}
+      </p>
+      {% endif %}
+   </div>
+
+   
+   
+{% endblock %}
+
