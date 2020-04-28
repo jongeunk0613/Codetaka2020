@@ -50,7 +50,10 @@
          Y <input id="Y" disabled><br>
          P <input id="P" disabled>
          <textarea id="try" style="width: 100%; height: 80%;"></textarea>-->
-         <div id="chatLog"></div><br>
+         <div id="chatLog" class="mesgs">
+            <div id="chatHistory" class="msg_history">
+            </div>
+         </div><br>
          <textarea id="chatInput"></textarea>
          <input id="chatSubmit" onclick="sendMessage()" type="button" value="Send"></input>
       </div>
@@ -62,19 +65,21 @@
    var id = {{nextId}};
    var scId = {{sc.id}};
    var classname = "{{className}}";
+   var userid = "{{user.id}}";
    var htmlEntities = [
       [/&amp;/g, "&"],
       [/&lt;/g, "<"],
       [/&gt;/g, ">"],
       [/&quot;/g, "\""],
       [/&#x27;/g, "\'"],
-   ]; 
+   ];
    
    window.onload = prepare;
 
    function prepare() {
       highlightSC();
       loadComments();
+      loadMessages();
    }
 
    window.addEventListener('mousedown', function(e){
@@ -99,33 +104,54 @@
    
    scSocket.onmessage = function(e){
       var data = JSON.parse(e.data);
+      var todoType = data['todoType'];
       
-      var cid = data['cId'];
-      var seltxt = data['seltxt'];
-      var anchorNodeID = data['anchorNodeID'];
-      var anchorOffset = data['anchorOffset'];
-      var focusNodeID = data['focusNodeID'];
-      var focusOffset = data['focusOffset'];
-      var posx = data['posx'];
-      var posy = data['posy'];
-      var text = data['text'];
-      
-      var newComment = Object.create(Comment);
-      newComment.id = cid;
-      newComment.seltxt = seltxt;
-      newComment.anchorNodeID = anchorNodeID;
-      newComment.anchorOffset = anchorOffset;
-      newComment.focusNodeID = focusNodeID;
-      newComment.focusOffset = focusOffset;
-      newComment.posX = posx;
-      newComment.posY = posy;
-      newComment.text = text;
-      
-      //alert(newComment.posX + "|" + newComment.posY);
-      
-      var newCommentIcon = newComment.createComment();
-      document.getElementById("code").prepend(newCommentIcon);
-      $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
+      if (todoType == "comment"){
+         var cid = data['cId'];
+         var seltxt = data['seltxt'];
+         var anchorNodeID = data['anchorNodeID'];
+         var anchorOffset = data['anchorOffset'];
+         var focusNodeID = data['focusNodeID'];
+         var focusOffset = data['focusOffset'];
+         var posx = data['posx'];
+         var posy = data['posy'];
+         var text = data['text'];
+         
+         var newComment = Object.create(Comment);
+         newComment.id = cid;
+         newComment.seltxt = seltxt;
+         newComment.anchorNodeID = anchorNodeID;
+         newComment.anchorOffset = anchorOffset;
+         newComment.focusNodeID = focusNodeID;
+         newComment.focusOffset = focusOffset;
+         newComment.posX = posx;
+         newComment.posY = posy;
+         newComment.text = text;
+         
+         //alert(newComment.posX + "|" + newComment.posY);
+         
+         var newCommentIcon = newComment.createComment();
+         document.getElementById("code").prepend(newCommentIcon);
+         $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
+      } else if (todoType == "message"){
+         var muserid = data['userid'];
+         var mcontent = data['content'];
+         var mtimestamp = data['timestamp'];
+         
+         if (muserid == userid){
+            var newMessage = Object.create(Message);
+            newMessage.userid = muserid;
+            newMessage.content = mcontent;
+            newMessage.timestamp = mtimestamp;
+            newMessage.createOutgoingMessage();
+         } else {
+            var newMessage = Object.create(Message);
+            newMessage.userid = muserid;
+            newMessage.content = mcontent;
+            newMessage.timestamp = mtimestamp;
+            newMessage.createIncomingMessage();
+         }
+      }
    }
 
    scSocket.onclose = function(e){
@@ -185,7 +211,34 @@
             $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
          }
       }
-       
+   }
+
+   // LOAD MESSAGES
+   function loadMessages() {
+      var messagelist = {{messagelist|safe}};
+      
+      if (messagelist.length > 0){
+         for (var i = 0; i < messagelist.length; i++){
+            var muserid = messagelist[i]["fields"].user;
+            var mcontent = messagelist[i]["fields"].content;
+            var mtimestamp = messagelist[i]["fields"].timestamp;
+            
+            if (muserid == userid){
+               var newMessage = Object.create(Message);
+               newMessage.userid = muserid;
+               newMessage.content = mcontent;
+               newMessage.timestamp = mtimestamp;
+               newMessage.createOutgoingMessage();
+               
+            } else {
+               var newMessage = Object.create(Message);
+               newMessage.userid = muserid;
+               newMessage.content = mcontent;
+               newMessage.timestamp = mtimestamp;
+               newMessage.createIncomingMessage();
+            }
+         }
+      }
    }
 
    //COMMENT OBJECT
@@ -268,6 +321,67 @@
       }
    }
 
+   // MESSAGE OBJECT
+   const Message = {
+      userid: 0,
+      content: "",
+      timestamp: "",
+      createOutgoingMessage() {
+         var userid = this.userid;
+         var mcontent = this.content;
+         var timestamp = this.timestamp;
+         var year = timestamp.substring(0,4);
+         var month = timestamp.substring(5,7);
+         var day = timestamp.substring(8,10);
+         var hour = timestamp.substring(11,13);
+         var minute = timestamp.substring(14,16);
+         
+         var divOutgoing = document.createElement("div");
+         divOutgoing.className = "outgoing_msg";
+         var divSent = document.createElement("div");
+         divSent.className = "sent_msg";
+         divOutgoing.appendChild(divSent);
+         var content = document.createElement("p");
+         content.innerHTML = mcontent;
+         divSent.appendChild(content);
+         var timedate = document.createElement("span");
+         timedate.className = "time_date";
+         timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         divSent.appendChild(timedate);
+         
+         document.getElementById("chatHistory").appendChild(divOutgoing);
+      },
+      createIncomingMessage(){
+         var userid = this.userid;
+         var mcontent = this.content;
+         var timestamp = this.timestamp;
+         var year = timestamp.substring(0,4);
+         var month = timestamp.substring(5,7);
+         var day = timestamp.substring(8,10);
+         var hour = timestamp.substring(11,13);
+         var minute = timestamp.substring(14,16);
+         
+         var divIncoming = document.createElement("div");
+         divIncoming.className = "incoming_msg";
+         var divReceived = document.createElement("div");
+         divReceived.className = "received_msg";
+         divIncoming.appendChild(divReceived);
+         var divReceivedContent = document.createElement("div");
+         divReceivedContent.className = "received_withd_msg";
+         divReceived.appendChild(divReceivedContent);
+         var content = document.createElement("p");
+         content.innerHTML = mcontent;
+         divReceivedContent.appendChild(content);
+         var timedate = document.createElement("span");
+         timedate.className = "time_date";
+         timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         divReceivedContent.appendChild(timedate);
+         
+         document.getElementById("chatHistory").appendChild(divIncoming);
+      }
+   }
+ 
+   
    // GET SELECTION
    function getSelectedText(e) {
       if(window.getSelection) {
@@ -298,8 +412,8 @@
             newComment.posX = x;
             newComment.posY = y;
             
-            X.value = newComment.anchorNodeID;
-            Y.value = newComment.focusNodeID;
+            //X.value = newComment.anchorNodeID;
+            //Y.value = newComment.focusNodeID;
             
             var newCommentIcon = newComment.createComment();
             document.getElementById("code").prepend(newCommentIcon);
@@ -335,6 +449,7 @@
             alert("SUCCESS\n" + response);
             
             scSocket.send(JSON.stringify({
+               'todoType': "comment",
                'cId': response,
             }));
          },
@@ -358,6 +473,13 @@
          },
          success: function (response){
             alert("SUCCESS\n" + response);
+            
+            scSocket.send(JSON.stringify({
+               'todoType': "message",
+               'messageId': response,
+            }));
+            
+            chatInput.value = "";
          },
          error: function (response){
             alert("ERROR!!\n" + response);

@@ -232,7 +232,7 @@
    width: 100%;
 
    border: 1px solid #ddd;
-   border-color: yellow;
+   /*border-color: yellow;*/
 }
 
 #user{
@@ -248,8 +248,8 @@
    
    word-break: break-all;
 
-   border: 1px solid #ddd;
-   border-color: blue;
+   /*border: 1px solid #ddd;*/
+   /*border-color: blue;*/
 }
 
 /*-----CODE SECTION-----*/
@@ -262,7 +262,7 @@
    z-index: 2;
    
    border: 1px solid #ddd;
-   border-color: green;
+   /*border-color: green;*/
 }
 
 #showLineNum{
@@ -300,8 +300,8 @@ pre {
    height: 100%;
    width: 25%;
    
-   border: 1px solid #ddd;
-   border-color: red;
+   /*border: 1px solid #ddd;*/
+   /*border-color: red;*/
    
    overflow-y: scroll;
    height: 100%;

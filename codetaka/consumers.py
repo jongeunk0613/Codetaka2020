@@ -6,7 +6,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
 
 
-from .models import Class, Comment
+from .models import Class, Comment, Message
 
 User = get_user_model()
 
@@ -83,31 +83,53 @@ class scConsumer(WebsocketConsumer):
    # Receive message from WebSocket
    def receive(self, text_data):
       data = json.loads(text_data)
-      cId = data['cId']
+      todoType = data['todoType']
       
-      comment = Comment.objects.get(pk=cId)
-      
-      #Send message to room group
-      async_to_sync(self.channel_layer.group_send)(
-         self.sc_group_name, {
-         'type': 'commentCreated',
-         'cId': comment.idNumber,
-         'seltxt': comment.seltxt,
-         'anchorNodeID': comment.anchorNodeID,
-         'anchorOffset': comment.anchorOffset,
-         'focusNodeID': comment.focusNodeID,
-         'focusOffset': comment.focusOffset,
-         'posx': comment.posX,
-         'posy': comment.posY,
-         'text': comment.text,
-         }
-      )
+      if (todoType == "comment") is True:
+         cId = data['cId']
+         
+         comment = Comment.objects.get(pk=cId)
+         
+         #Send message to room group
+         async_to_sync(self.channel_layer.group_send)(
+            self.sc_group_name, {
+            'type': 'commentCreated',
+            'todoType': "comment",
+            'cId': comment.idNumber,
+            'seltxt': comment.seltxt,
+            'anchorNodeID': comment.anchorNodeID,
+            'anchorOffset': comment.anchorOffset,
+            'focusNodeID': comment.focusNodeID,
+            'focusOffset': comment.focusOffset,
+            'posx': comment.posX,
+            'posy': comment.posY,
+            'text': comment.text,
+            }
+         )
+      elif (todoType == "message") is True:
+         messageId = data['messageId']
+         
+         message = Message.objects.get(pk=messageId)
+         
+         # Send message to room group
+         async_to_sync(self.channel_layer.group_send)(
+            self.sc_group_name, {
+            'type': 'messageSent',
+            'todoType': "message",
+            'userid': message.user.id,
+            'scId': message.sc.id,
+            'ofClass': message.ofClass.id,
+            'content': message.content,
+            'timestamp': json.dumps(message.timestamp, cls=DjangoJSONEncoder),
+            }
+         )
       
    # Receive message from room group
    def commentCreated(self, event):
       
       # Send message to WebSocket
       self.send(text_data=json.dumps({
+         'todoType': "comment",
          'cId': event['cId'],
          'seltxt': event['seltxt'],
          'anchorNodeID': event['anchorNodeID'],
@@ -119,3 +141,15 @@ class scConsumer(WebsocketConsumer):
          'text': event['text'],
                                      }))
    
+   # Receive message from room group
+   def messageSent(self, event):
+      
+      # Send message to WebSocket
+      self.send(text_data=json.dumps({
+         'todoType': "message",
+         'userid': event['userid'],
+         'scId': event['scId'],
+         'ofClass': event['ofClass'],
+         'content': event['content'],
+         'timestamp': json.dumps(event['timestamp'], cls=DjangoJSONEncoder),
+                                     }))

@@ -52,7 +52,7 @@ def signOut(request):
 # SHOW LIST OF CLASS
 def classList(request):
    context = {
-      'classList': Class.objects.all().filter(user = request.user)
+      'classList': Class.objects.all()
    }
    return render(request, 'classes.html', context)
    
@@ -97,10 +97,12 @@ def openSC(request, className, sc_id):
    if (len(Comment.objects.all()) > 0):
       nextID = Comment.objects.last().idNumber
    else:
-      nextID = -1;
+      nextID = -1
+   
+   messagelist = serializers.serialize("json", Message.objects.all().filter(sc=sc))
    
    context = {
-      'user': request.user.username,
+      'user': request.user,
       'form': SCUploadForm(),
       'sclist': SourceCode.objects.all(),
       'className': className,
@@ -109,6 +111,7 @@ def openSC(request, className, sc_id):
       'range' : range(1, len(sc_content.split("\n"))+1),
       'nextId': nextID,
       'commentlist': commentlist,
+      'messagelist': messagelist,
    }
    return render(request, 'mainpage.html', context)
 
@@ -117,7 +120,7 @@ def saveComment(request):
       scId = SourceCode.objects.only('id').get(id = request.GET['scId'])
       comment = Comment.objects.create(scId = scId, seltxt=request.GET['seltxt'], idNumber = request.GET['id'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],posX=request.GET['posX'],posY=request.GET['posY'],text=request.GET['text'])
       comment.save()
-      return HttpResponse('Saved')
+      return HttpResponse(comment.id)
    else:
       return HttpResponse('error')
 
@@ -128,5 +131,5 @@ def sendMessage(request):
       ofClass = Class.objects.get(name=request.GET['classname'])
       message = Message.objects.create(user = user, sc = sc, ofClass = ofClass, content = request.GET['messageContent'])
       message.save()
-      return HttpResponse("SAVED")
+      return HttpResponse(message.id)
    return HttpResponse("NOT A GET")
