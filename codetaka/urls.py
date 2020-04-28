@@ -14,4 +14,5 @@ urlpatterns = [
     path('class/<str:className>/', views.openClass, name='openClass'),
     path('class/<str:className>/<int:sc_id>/', views.openSC, name='openSC'),
     path('saveComment/', views.saveComment, name='saveComment'),
+    path('sendMessage/', views.sendMessage, name='sendMessage'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

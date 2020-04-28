@@ -45,13 +45,14 @@
       </div>
 
       <div id="secChat">
+         <!--
          X <input id="X" disabled><br>
          Y <input id="Y" disabled><br>
          P <input id="P" disabled>
-         <textarea id="try" style="width: 100%; height: 80%;"></textarea>
+         <textarea id="try" style="width: 100%; height: 80%;"></textarea>-->
          <div id="chatLog"></div><br>
          <textarea id="chatInput"></textarea>
-         <input id="chatSubmit" type="button" value="Send"></input>
+         <input id="chatSubmit" onclick="sendMessage()" type="button" value="Send"></input>
       </div>
    </div>
 
@@ -157,7 +158,7 @@
          n += 1;
       }
       
-      document.getElementById("try").innerHTML = document.getElementById("code").innerHTML;
+      //document.getElementById("try").innerHTML = document.getElementById("code").innerHTML;
    }
 
    // LOAD COMMENTS
@@ -339,6 +340,27 @@
             alert("ERROR!!\n" + response);
          }
       });
+   }
+
+   function sendMessage(){
+      var message = chatInput.value;
+      alert(message);
+      
+      /*
+      $.ajax(
+      {
+         url: "{% url 'sendMessage' %}",
+         type: "GET",
+         data:{
+             
+         },
+         success: function (response){
+            alert("SUCCESS\n" + response);
+         },
+         error: function (response){
+            alert("ERROR!!\n" + response);
+         }
+      });*/
    }
    
 </script>

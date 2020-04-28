@@ -124,3 +124,5 @@ def saveComment(request):
    else:
       return HttpResponse('error')
 
+def sendMessage(request):
+   return HttpResponse("hi")
