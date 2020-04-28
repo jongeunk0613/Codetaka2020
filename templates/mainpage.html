@@ -60,6 +60,8 @@
    var x = 0;
    var y = 0;
    var id = {{nextId}};
+   var scId = {{sc.id}};
+   var classname = "{{className}}";
    var htmlEntities = [
       [/&amp;/g, "&"],
       [/&lt;/g, "<"],
@@ -343,16 +345,16 @@
    }
 
    function sendMessage(){
-      var message = chatInput.value;
-      alert(message);
+      var messageContent = chatInput.value;
       
-      /*
       $.ajax(
       {
          url: "{% url 'sendMessage' %}",
          type: "GET",
          data:{
-             
+            scId: scId,
+            messageContent: messageContent,
+            classname: classname,
          },
          success: function (response){
             alert("SUCCESS\n" + response);
@@ -360,7 +362,7 @@
          error: function (response){
             alert("ERROR!!\n" + response);
          }
-      });*/
+      });
    }
    
 </script>

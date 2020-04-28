@@ -30,9 +30,9 @@ class Comment(models.Model):
       return "[" + str(self.id) + "]: " + self.text
 
 
-class message(models.Model):
+class Message(models.Model):
    user = models.ForeignKey(User, on_delete=models.CASCADE)
-   scId = models.ForeignKey(SourceCode, on_delete=models.CASCADE)
+   sc = models.ForeignKey(SourceCode, on_delete=models.CASCADE)
    ofClass = models.ForeignKey(Class, on_delete=models.CASCADE)
    content = models.TextField()
    timestamp = models.DateTimeField(auto_now_add=True)

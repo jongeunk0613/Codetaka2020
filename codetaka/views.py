@@ -9,7 +9,7 @@ from json import dumps
 import json
 
 from .forms import SignUpForm, SCUploadForm
-from .models import Class, SourceCode, Comment
+from .models import Class, SourceCode, Comment, Message
 
 # DEFAULT PAGE
 def index(request):
@@ -117,12 +117,16 @@ def saveComment(request):
       scId = SourceCode.objects.only('id').get(id = request.GET['scId'])
       comment = Comment.objects.create(scId = scId, seltxt=request.GET['seltxt'], idNumber = request.GET['id'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],posX=request.GET['posX'],posY=request.GET['posY'],text=request.GET['text'])
       comment.save()
-      if (Comment.objects.filter(scId = scId).exists() == True):
-         return HttpResponse(comment.id)
-      else:
-         return HttpResponse('not exists')
+      return HttpResponse('Saved')
    else:
       return HttpResponse('error')
 
 def sendMessage(request):
-   return HttpResponse("hi")
+   if request.method == "GET":
+      sc = SourceCode.objects.only('id').get(id = request.GET['scId'])
+      user = request.user
+      ofClass = Class.objects.get(name=request.GET['classname'])
+      message = Message.objects.create(user = user, sc = sc, ofClass = ofClass, content = request.GET['messageContent'])
+      message.save()
+      return HttpResponse("SAVED")
+   return HttpResponse("NOT A GET")
