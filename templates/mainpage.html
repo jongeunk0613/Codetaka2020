@@ -40,7 +40,7 @@
                   {% endfor %}
                </p>
             </div>
-            <pre id="code"></pre>
+            <p id="code"></p>
          </div>
       </div>
 
@@ -48,7 +48,7 @@
          X <input id="X" disabled><br>
          Y <input id="Y" disabled><br>
          P <input id="P" disabled>
-         <!--<textarea id="try" style="width: 100%; height: 80%;"></textarea>-->
+         <textarea id="try" style="width: 100%; height: 80%;"></textarea>
          <div id="chatLog"></div><br>
          <textarea id="chatInput"></textarea>
          <input id="chatSubmit" type="button" value="Send"></input>
@@ -56,36 +56,78 @@
    </div>
 
 <script>
-   
    var x = 0;
    var y = 0;
-   var id = 0;
+   var id = {{nextId}};
    var htmlEntities = [
       [/&amp;/g, "&"],
       [/&lt;/g, "<"],
       [/&gt;/g, ">"],
       [/&quot;/g, "\""],
       [/&#x27;/g, "\'"],
-   ];
-   var commentsByLine[{{range}}] 
+   ]; 
    
    window.onload = prepare;
 
    function prepare() {
       highlightSC();
-      //loadComments();
+      loadComments();
    }
 
    window.addEventListener('mousedown', function(e){
       x = e.target.closest('.line').offsetLeft + e.target.closest('.line').offsetWidth;
       y = e.target.offsetTop;
       
-      X.value = x;
-      Y.value = y;
+      //X.value = x;
+      //Y.value = y;
    });
    window.addEventListener('mouseup', function(e){
       getSelectedText(e);
    });
+
+   /*document.onselectionchange = function() {
+      let {anchorNode, anchorOffset, focusNode, focusOffset} = document.getSelection();
+      //X.value = `${anchorNode.parentNode.id}:${anchorOffset}`;
+      //Y.value = `${focusNode.parentNode.parentNode.id}:${focusOffset}`;
+   }*/
+
+   // CHANNELS WEBSOCKET
+   const scSocket = new WebSocket('ws://' + window.location.host + "/ws/sourcecode/" + "{{sc.id}}" + '/');
+   
+   scSocket.onmessage = function(e){
+      var data = JSON.parse(e.data);
+      
+      var cid = data['cId'];
+      var seltxt = data['seltxt'];
+      var anchorNodeID = data['anchorNodeID'];
+      var anchorOffset = data['anchorOffset'];
+      var focusNodeID = data['focusNodeID'];
+      var focusOffset = data['focusOffset'];
+      var posx = data['posx'];
+      var posy = data['posy'];
+      var text = data['text'];
+      
+      var newComment = Object.create(Comment);
+      newComment.id = cid;
+      newComment.seltxt = seltxt;
+      newComment.anchorNodeID = anchorNodeID;
+      newComment.anchorOffset = anchorOffset;
+      newComment.focusNodeID = focusNodeID;
+      newComment.focusOffset = focusOffset;
+      newComment.posX = posx;
+      newComment.posY = posy;
+      newComment.text = text;
+      
+      //alert(newComment.posX + "|" + newComment.posY);
+      
+      var newCommentIcon = newComment.createComment();
+      document.getElementById("code").prepend(newCommentIcon);
+      $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
+   }
+
+   scSocket.onclose = function(e){
+      alert("CLOSE");
+   }
 
    // HIGHLIGHT SC AND DISPLAY
    function highlightSC() {
@@ -114,6 +156,33 @@
          grandels[i].id = `el${n}`;
          n += 1;
       }
+      
+      document.getElementById("try").innerHTML = document.getElementById("code").innerHTML;
+   }
+
+   // LOAD COMMENTS
+   function loadComments() {
+      if (id != -1){
+         var commentlist = {{commentlist|safe}};
+         for (var i = 0; i < commentlist.length; i++){
+            var newComment = Object.create(Comment);
+            newComment.id = commentlist[i]["fields"].idNumber;
+            newComment.seltxt = commentlist[i]["fields"].seltxt;
+            newComment.anchorNodeID = commentlist[i]["fields"].anchorNodeID;
+            newComment.anchorOffset = commentlist[i]["fields"].anchorOffset;
+            newComment.focusNodeID = commentlist[i]["fields"].focusNodeID;
+            newComment.focusOffset = commentlist[i]["fields"].focusOffset;
+            newComment.posX = commentlist[i]["fields"].posX;
+            newComment.posY = commentlist[i]["fields"].posY;
+            newComment.text = commentlist[i]["fields"].text;
+            
+            var newCommentIcon = newComment.createComment();
+            
+            document.getElementById("code").prepend(newCommentIcon);
+            $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
+         }
+      }
+       
    }
 
    //COMMENT OBJECT
@@ -140,6 +209,12 @@
          var commentForm = document.createElement("div");
          commentForm.className = "commentForm";
          commentForm.id = `comment${this.id}Form`;
+         /*var commentMinimizeBtn = document.createElement("button");
+         commentMinimizeBtn.className = "commentMinimizeBtn";
+         var minimizeIcon = document.createElement("i");
+         minimizeIcon.className = "fas fa-window-minimize minimize";
+         commentMinimizeBtn.appendChild(minimizeIcon);
+         commentForm.appendChild(commentMinimizeBtn);*/
          var commentContent = document.createElement("textarea");
          commentContent.innerHTML = text;
          commentContent.id = `comment${this.id}Text`;
@@ -194,26 +269,77 @@
    function getSelectedText(e) {
       if(window.getSelection) {
          var seltxt = window.getSelection();
+         var {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection();
          if (seltxt.toString().length > 0 && e.target.closest("#code").id == "code"){
+            
+            //.designMode = "on";
+            //document.execCommand("HiliteColor", false, "yellow");
+            //document.designMode = "off";
             
             var newComment = Object.create(Comment);
             newComment.id = id +1;
             id = id + 1;
             newComment.seltxt = seltxt.toString();
-            newComment.anchorNodeID = seltxt.anchorNode.parentNode.id;
+            if (anchorNode.parentNode.tagName.toLowerCase() == 'span'){
+               newComment.anchorNodeID = anchorNode.parentNode.id;
+            } else if (anchorNode.parentNode.parentNode.tagName.toLowerCase() == 'span'){
+               newComment.anchorNodeID = anchorNode.parentNode.parentNode.id;
+            }
             newComment.anchorOffset = seltxt.anchorOffset;
-            newComment.focusNodeID = seltxt.focusNode.parentNode.id;
+            if (focusNode.parentNode.tagName.toLowerCase() == 'span'){
+               newComment.focusNodeID = focusNode.parentNode.id;
+            } else if (focusNode.parentNode.parentNode.tagName.toLowerCase() == 'span'){
+               newComment.focusNodeID = focusNode.parentNode.parentNode.id;
+            }
             newComment.focusOffset = seltxt.focusOffset;
             newComment.posX = x;
             newComment.posY = y;
             
+            X.value = newComment.anchorNodeID;
+            Y.value = newComment.focusNodeID;
+            
             var newCommentIcon = newComment.createComment();
-            document.getElementById("showContent").prepend(newCommentIcon);
+            document.getElementById("code").prepend(newCommentIcon);
             $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
          }
       }
    }
    
+   // CANCEL COMMENT
+   function cancelComment(commentID){
+      document.getElementById(`comment${commentID}`).remove();
+   }
+   
+   //SAVE COMMENT
+   function saveComment(id, seltxt, anchorNodeID, anchorOffset, focusNodeID, focusOffset, posX, posY, text){
+      $.ajax(
+      {
+         url: "{% url 'saveComment' %}",
+         type: "GET",
+         data:{
+             scId: {{sc.id}},
+             id: id,
+             seltxt: seltxt,
+             anchorNodeID: anchorNodeID,
+             anchorOffset: anchorOffset,
+             focusNodeID: focusNodeID,
+             focusOffset: focusOffset,
+             posX: posX,
+             posY: posY,
+             text: $(`#comment${id}Content`).val(),
+         },
+         success: function (response){
+            alert("SUCCESS\n" + response);
+            
+            scSocket.send(JSON.stringify({
+               'cId': response,
+            }));
+         },
+         error: function (response){
+            alert("ERROR!!\n" + response);
+         }
+      });
+   }
    
 </script>
 

@@ -9,7 +9,7 @@ from json import dumps
 import json
 
 from .forms import SignUpForm, SCUploadForm
-from .models import Class, SourceCode
+from .models import Class, SourceCode, Comment
 
 # DEFAULT PAGE
 def index(request):
@@ -93,6 +93,12 @@ def openSC(request, className, sc_id):
    sc_content = sc.content.read()
    sc.content.close()
    
+   commentlist = serializers.serialize("json", Comment.objects.all().filter(scId=sc_id))
+   if (len(Comment.objects.all()) > 0):
+      nextID = Comment.objects.last().idNumber
+   else:
+      nextID = -1;
+   
    context = {
       'user': request.user.username,
       'form': SCUploadForm(),
@@ -101,8 +107,20 @@ def openSC(request, className, sc_id):
       'sc': sc,
       'js_fcontent': dumps(sc_content),
       'range' : range(1, len(sc_content.split("\n"))+1),
+      'nextId': nextID,
+      'commentlist': commentlist,
    }
    return render(request, 'mainpage.html', context)
 
-
+def saveComment(request):
+   if request.method == "GET":
+      scId = SourceCode.objects.only('id').get(id = request.GET['scId'])
+      comment = Comment.objects.create(scId = scId, seltxt=request.GET['seltxt'], idNumber = request.GET['id'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],posX=request.GET['posX'],posY=request.GET['posY'],text=request.GET['text'])
+      comment.save()
+      if (Comment.objects.filter(scId = scId).exists() == True):
+         return HttpResponse(comment.id)
+      else:
+         return HttpResponse('not exists')
+   else:
+      return HttpResponse('error')
 
