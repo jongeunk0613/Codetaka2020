@@ -311,28 +311,39 @@ pre {
 #chatLog{
    border-bottom: 1px solid #ddd;
    width: 100%;
-   height: 82%;
+   height: 90%;
    top: 0px;
+}
+
+#chatBottom{
+   position: relative;
+   width: 100%;
+   height: 6.5%;
 }
 
 #chatInput{
    position: absolute;
-   top: 83%;
+   bottom: 20%;
    left: 2%;
    
-   width: 70%;
-   height: 16%;
+   width: 74%;
+   height: 100%;
    
    font-size: 15px;
+   outline: none;
    
+   border: none;
 }
 
 #chatSubmit{
    position: absolute;
-   top: 83%;
-   left: 74%;
-   width: 24%;
-   height: 16%;
+   bottom: 20%;
+   left: 78%;
+   width: 20%;
+   height: 100%;
+   background-color: #1e68a8;
+   color: white;
+   border-radius: 5px;
 }
 
 /*-----COMMENTS-----*/

@@ -71,7 +71,7 @@ def addClass(request):
       
 def openClass(request, className):
    context = {
-      'user': request.user.username,
+      'user': request.user,
       'form': SCUploadForm(),
       'sclist': SourceCode.objects.all(),
       'className': className,

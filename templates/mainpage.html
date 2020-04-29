@@ -54,8 +54,10 @@
             <div id="chatHistory" class="msg_history">
             </div>
          </div><br>
-         <textarea id="chatInput"></textarea>
-         <input id="chatSubmit" onclick="sendMessage()" type="button" value="Send"></input>
+         <div id="chatBottom">
+            <textarea id="chatInput"></textarea>
+            <input id="chatSubmit" onclick="sendMessage()" type="button" value="Send"></input>
+         </div>
       </div>
    </div>
 
@@ -168,6 +170,16 @@
       for (var i = 0; i < htmlEntities.length; i++){
          highlighted = highlighted.replace(htmlEntities[i][0], htmlEntities[i][1]);
       }
+      
+      
+      // ADD NODES BY LINE
+      var bylines = highlighted.split("\n");
+      for (var i = 0; i < bylines.length; i++){
+         var oneline = bylines[i];
+         bylines[i] = `<span class='line' data-lineNumber='${i+1}'>` + oneline + "</span>";
+      }
+      var line = bylines.join("\n");
+      document.getElementById("code").innerHTML = line;
       
       // ADD NODES BY LINE
       var bylines = highlighted.split("\n");
@@ -389,7 +401,7 @@
          var {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection();
          if (seltxt.toString().length > 0 && e.target.closest("#code").id == "code"){
             
-            //.designMode = "on";
+            //document.designMode = "on";
             //document.execCommand("HiliteColor", false, "yellow");
             //document.designMode = "off";
             
@@ -397,17 +409,9 @@
             newComment.id = id +1;
             id = id + 1;
             newComment.seltxt = seltxt.toString();
-            if (anchorNode.parentNode.tagName.toLowerCase() == 'span'){
-               newComment.anchorNodeID = anchorNode.parentNode.id;
-            } else if (anchorNode.parentNode.parentNode.tagName.toLowerCase() == 'span'){
-               newComment.anchorNodeID = anchorNode.parentNode.parentNode.id;
-            }
+            newComment.anchorNodeID = anchorNode.parentNode.id;
             newComment.anchorOffset = seltxt.anchorOffset;
-            if (focusNode.parentNode.tagName.toLowerCase() == 'span'){
-               newComment.focusNodeID = focusNode.parentNode.id;
-            } else if (focusNode.parentNode.parentNode.tagName.toLowerCase() == 'span'){
-               newComment.focusNodeID = focusNode.parentNode.parentNode.id;
-            }
+            newComment.focusNodeID = focusNode.parentNode.id;
             newComment.focusOffset = seltxt.focusOffset;
             newComment.posX = x;
             newComment.posY = y;
@@ -446,7 +450,8 @@
              text: $(`#comment${id}Content`).val(),
          },
          success: function (response){
-            alert("SUCCESS\n" + response);
+            document.getElementById(`comment${id}`).remove();
+            //alert("SUCCESS\n" + response);
             
             scSocket.send(JSON.stringify({
                'todoType': "comment",
@@ -472,7 +477,7 @@
             classname: classname,
          },
          success: function (response){
-            alert("SUCCESS\n" + response);
+            //alert("SUCCESS\n" + response);
             
             scSocket.send(JSON.stringify({
                'todoType': "message",
