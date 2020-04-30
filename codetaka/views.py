@@ -18,6 +18,7 @@ def index(request):
    else:
       return redirect('signIn')
 
+# SIGN UP
 def signUp(request):
    if request.method == 'POST':
       form = SignUpForm(request.POST)
@@ -28,6 +29,7 @@ def signUp(request):
       form = SignUpForm()
    return render(request, 'signup.html', {'form': form})
 
+# SIGN IN
 def signIn(request):
    context = {
       'text': "THIS IS CODE",
@@ -44,31 +46,32 @@ def signIn(request):
    form = AuthenticationForm()
    return render(request, 'signin.html', {'form': form})
 
+# SIGN OUT
 def signOut(request):
    logout(request)
    form = AuthenticationForm()
    return redirect('signIn')
 
 # SHOW LIST OF CLASS
+@login_required
 def classList(request):
    context = {
       'classList': Class.objects.all()
    }
    return render(request, 'classes.html', context)
    
+# CREATE CLASS
+@login_required
 def addClass(request):
    if request.method == "GET":
-      newClass = Class(user=request.user, name=request.GET['className'])
+      newClass = Class(user=request.user, name=request.GET['classname'])
       newClass.save()
-      data = {
-         'name': newClass.name,
-         'user': newClass.user.username,
-         'created': newClass.timestamp,
-      }
-      return JsonResponse({"info": data}, status=200)
+      return HttpResponse(newClass.id)
    else:
       return HttpResponse('NOT A GET REQUEST')
-      
+   
+# OPEN CLASS
+@login_required
 def openClass(request, className):
    context = {
       'user': request.user,
@@ -86,7 +89,9 @@ def openClass(request, className):
    form = SCUploadForm()
    sclist = SourceCode.objects.all()
    return render(request, 'mainpage.html', context)
-   
+
+# OPEN SOURCE CODE
+@login_required
 def openSC(request, className, sc_id):
    sc = get_object_or_404(SourceCode, pk=sc_id)
    sc.content.open(mode="r")
@@ -95,7 +100,7 @@ def openSC(request, className, sc_id):
    
    commentlist = serializers.serialize("json", Comment.objects.all().filter(scId=sc_id))
    if (len(Comment.objects.all()) > 0):
-      nextID = Comment.objects.last().idNumber
+      nextID = Comment.objects.last().pk + 1
    else:
       nextID = -1
    
@@ -115,15 +120,42 @@ def openSC(request, className, sc_id):
    }
    return render(request, 'mainpage.html', context)
 
+# GET LATEST COMMENT ID
+@login_required
+def getLatestCommentId(request):
+   if request.method == "GET":
+      if (len(Comment.objects.all()) == 0):
+         return HttpResponse(1)
+      else:
+         latest = Comment.objects.last()
+         return HttpResponse(latest.pk + 1)
+
+# CREATE COMMENT
+@login_required
 def saveComment(request):
    if request.method == "GET":
       scId = SourceCode.objects.only('id').get(id = request.GET['scId'])
-      comment = Comment.objects.create(scId = scId, seltxt=request.GET['seltxt'], idNumber = request.GET['id'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],posX=request.GET['posX'],posY=request.GET['posY'],text=request.GET['text'])
+      comment = Comment.objects.create(user = request.user, scId = scId, seltxt=request.GET['seltxt'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],posX=request.GET['posX'],posY=request.GET['posY'],text=request.GET['text'])
       comment.save()
       return HttpResponse(comment.id)
    else:
       return HttpResponse('error')
 
+# DELETE COMMENT
+@login_required
+def deleteComment(request):
+   if request.method == "GET":
+      comment = Comment.objects.get(pk = request.GET['cId'])
+      if request.user == comment.user:
+         comment.delete()
+         return HttpResponse("DELETED")
+      else:
+         return HttpResponse("NO ACCESS")
+   else:
+      return HttpResponse("NOT A GET REQUEST")
+
+# CREATE MESSAGE
+@login_required
 def sendMessage(request):
    if request.method == "GET":
       sc = SourceCode.objects.only('id').get(id = request.GET['scId'])

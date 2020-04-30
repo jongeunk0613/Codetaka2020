@@ -14,7 +14,11 @@
 }
 
 #navbar {
+   position: fixed;
+   top: 0;
+   width: 100%;
    background-color: #0F4C81;
+   z-index: 3;
 }
 
 /*-----SIGN IN-----*/
@@ -175,7 +179,7 @@
 #classCreate{
    position: absolute;
    left: 10%;
-   top: 10%;
+   top: 15%;
    
    width: 80%;
    height: 6%;
@@ -204,13 +208,13 @@
 
 #btnClassCreate:hover{
    background-color: #3a709e;
-   box-shadow: 2px 2px 5px 0px rgba(189,185,189,1);
+   /*box-shadow: 2px 2px 5px 0px rgba(189,185,189,1);*/
 }
 
 #classList{
    position: absolute;
    left: 10%;
-   top: 16%;
+   top: 21%;
    
    width: 80%;
    height: 70%;
@@ -231,7 +235,7 @@
    height: 100%;
    width: 100%;
 
-   border: 1px solid #ddd;
+   /*border: 1px solid #ddd;*/
    /*border-color: yellow;*/
 }
 
@@ -243,31 +247,68 @@
 
 /*-----DIRECTORY SECTION-----*/
 #secDir{
+   position: fixed;
+   top: 56px;
    height: 100%;
    width: 20%;
    
    word-break: break-all;
 
-   /*border: 1px solid #ddd;*/
-   /*border-color: blue;*/
+   border: 1px solid #ddd;
+}
+
+#dirTree{
+   /*border: 1px solid #ddd;
+   border-color: blue;*/
+   overflow-y: scroll;
+   height: 80.5%;
 }
 
 /*-----CODE SECTION-----*/
+/*-----CODE MENU-----*/
+#codeMenu{
+   /*border: 1px solid #ddd;
+   border-color: green;*/
+   background-color: white;
+   border-bottom: 1px solid #ddd;
+   
+   position: fixed;
+   top: 56px;
+   left: 20%;
+   
+   width: calc(60% - 3px);
+   height: 35px;
+   
+   z-index: 3;
+}
+
+#menuBtnCreateComment{
+   position: absolute;
+   right: 3px;
+   background-color: transparent;
+   font-size: 20px;
+   border: none;
+   color: #1e68a8;
+}
+
+/*-----CODE BODY-----*/
 #secCode{
-   position: relative;
+   margin-top: 85px;
+   position: absolute;
+   left: 20%;
    padding: 10px 10px 10px 10px;
    
    height: 100%;
    width: 60%;
    z-index: 2;
    
-   border: 1px solid #ddd;
-   /*border-color: green;*/
+   /*border: 1px solid #ddd;
+   border-color: green;*/
 }
 
 #showLineNum{
    position:relative;
-   overflow-y: scroll;
+   /*overflow-y: scroll;*/
    font-size: 13px;
    z-index: -1;
    float:left;
@@ -276,7 +317,7 @@
 
 #showContent{
    position: relative;
-   overflow-y: scroll;
+   /*overflow-y: scroll;*/
    height: 100%;
 }
 
@@ -295,23 +336,23 @@ pre {
 
 /*-----CHAT SECTION-----*/
 #secChat{
-   position: relative;
+   position: fixed;
+   right: 0px;
+   top: 56px;
    
    height: 100%;
-   width: 25%;
+   width: 20.2%;
    
-   /*border: 1px solid #ddd;*/
-   /*border-color: red;*/
+   border: 1px solid #ddd;
    
    overflow-y: scroll;
    height: 100%;
-   
 }
 
 #chatLog{
    border-bottom: 1px solid #ddd;
    width: 100%;
-   height: 90%;
+   height: 84%;
    top: 0px;
 }
 
@@ -350,12 +391,9 @@ pre {
 .commentIcon{
    position: relative;
    border-radius: 5px;
-   transition: 0.3s;
    height: 20px;
    width: 20px;
    background-color: #0F4C81;
-   opacity: 1;
-   transition: opacity 1s;
 }
 
 .commentIcon.invisible{

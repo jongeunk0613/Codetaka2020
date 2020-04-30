@@ -34,25 +34,23 @@ class ClassConsumer(WebsocketConsumer):
    # Receive message from WebSocket
    def receive(self, text_data):
       data = json.loads(text_data)
-      className = data['className']
-      userName = data['userName']
+      classId = data['classId']
       
-      user = User.objects.get(username=userName)
-      newClass = Class.objects.create(user=user, name=className)
+      newClass = Class.objects.get(pk=classId)
       
       # Send message to class group
       async_to_sync(self.channel_layer.group_send)(
          self.classGroupName,
          {
-            'type': 'createClass',
-            'className': className,
-            'userName': userName,
+            'type': 'classCreated',
+            'className': newClass.name,
+            'userName': newClass.user.username,
             'timestamp': json.dumps(newClass.timestamp, cls=DjangoJSONEncoder)
          }
       )
       
    # Receive message from Class group
-   def createClass(self, event):
+   def classCreated(self, event):
       className = event['className']
       userName = event['userName']
       timestamp = event['timestamp']
@@ -85,7 +83,7 @@ class scConsumer(WebsocketConsumer):
       data = json.loads(text_data)
       todoType = data['todoType']
       
-      if (todoType == "comment") is True:
+      if (todoType == "commentCreated") is True:
          cId = data['cId']
          
          comment = Comment.objects.get(pk=cId)
@@ -94,8 +92,8 @@ class scConsumer(WebsocketConsumer):
          async_to_sync(self.channel_layer.group_send)(
             self.sc_group_name, {
             'type': 'commentCreated',
-            'todoType': "comment",
-            'cId': comment.idNumber,
+            'todoType': "commentCreated",
+            'cId': comment.pk,
             'seltxt': comment.seltxt,
             'anchorNodeID': comment.anchorNodeID,
             'anchorOffset': comment.anchorOffset,
@@ -106,7 +104,18 @@ class scConsumer(WebsocketConsumer):
             'text': comment.text,
             }
          )
-      elif (todoType == "message") is True:
+      elif (todoType == "commentDeleted") is True:
+         cId = data['cId']
+         
+         #Send message to room group
+         async_to_sync(self.channel_layer.group_send)(
+            self.sc_group_name, {
+            'type': 'commentDeleted',
+            'todoType': "commentDeleted",
+            'cId': cId,
+            }
+         )
+      elif (todoType == "messageSent") is True:
          messageId = data['messageId']
          
          message = Message.objects.get(pk=messageId)
@@ -115,7 +124,7 @@ class scConsumer(WebsocketConsumer):
          async_to_sync(self.channel_layer.group_send)(
             self.sc_group_name, {
             'type': 'messageSent',
-            'todoType': "message",
+            'todoType': "messageSent",
             'userid': message.user.id,
             'scId': message.sc.id,
             'ofClass': message.ofClass.id,
@@ -129,7 +138,7 @@ class scConsumer(WebsocketConsumer):
       
       # Send message to WebSocket
       self.send(text_data=json.dumps({
-         'todoType': "comment",
+         'todoType': "commentCreated",
          'cId': event['cId'],
          'seltxt': event['seltxt'],
          'anchorNodeID': event['anchorNodeID'],
@@ -142,11 +151,20 @@ class scConsumer(WebsocketConsumer):
                                      }))
    
    # Receive message from room group
+   def commentDeleted(self, event):
+      
+      # Send message to WebSocket
+      self.send(text_data=json.dumps({
+         'todoType': "commentDeleted",
+         'cId': event['cId'],
+                                     }))
+                                     
+   # Receive message from room group
    def messageSent(self, event):
       
       # Send message to WebSocket
       self.send(text_data=json.dumps({
-         'todoType': "message",
+         'todoType': "messageSent",
          'userid': event['userid'],
          'scId': event['scId'],
          'ofClass': event['ofClass'],

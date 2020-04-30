@@ -15,7 +15,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -129,3 +128,5 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+LOGIN_URL = '/codetaka/signIn/'

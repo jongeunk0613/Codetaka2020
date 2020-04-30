@@ -3,7 +3,11 @@
 {% csrf_token %}
 
 {% block title%}
-   Mainpage
+   {% if sc %}
+      {{className}} | {{sc.name}}
+   {% else %}
+      {{className}}
+   {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -31,6 +35,9 @@
          
       </div>
       
+      <div id="codeMenu">
+         <button id="menuBtnCreateComment"><i class = "fas fa-comment-alt"></i></button>
+      </div>
       <div id="secCode">
          <div id="showContent">
             <div id="showLineNum" unselectable="on">
@@ -64,8 +71,12 @@
 <script>
    var x = 0;
    var y = 0;
+   var creatingComment = false;
    var id = {{nextId}};
    var scId = {{sc.id}};
+   var seltxt = window.getSelection();
+   var {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection();
+   var target;
    var classname = "{{className}}";
    var userid = "{{user.id}}";
    var htmlEntities = [
@@ -84,15 +95,62 @@
       loadMessages();
    }
 
-   window.addEventListener('mousedown', function(e){
+   document.getElementById("code").addEventListener('mousedown', function(e){
       x = e.target.closest('.line').offsetLeft + e.target.closest('.line').offsetWidth;
       y = e.target.offsetTop;
       
       //X.value = x;
       //Y.value = y;
    });
-   window.addEventListener('mouseup', function(e){
-      getSelectedText(e);
+
+   document.getElementById("code").addEventListener('mouseup', function(e){
+      if (window.getSelection().toString().length > 0 && e.target.closest("#code").id == "code"){
+         seltxt = window.getSelection();
+         anchorNode = seltxt.anchorNode;
+         anchorOffset = seltxt.anchorOffset;
+         focusNode = seltxt.focusNode;
+         focusOffset = seltxt.focusOffset;
+         target = e.target;
+      }
+   });
+   
+   // CREATE COMMENT
+   document.getElementById("menuBtnCreateComment").addEventListener('click', function(e){
+      
+      if (seltxt.toString().length > 0 && target.closest("#code").id == "code"){
+         
+         if (creatingComment == false){
+            //document.designMode = "on";
+            //document.execCommand("HiliteColor", false, "yellow");
+            //document.designMode = "off";
+            
+            var newComment = Object.create(Comment);
+            newComment.id = id;
+            id = id;
+            newComment.seltxt = seltxt.toString();
+            newComment.anchorNodeID = anchorNode.parentNode.id;
+            newComment.anchorOffset = seltxt.anchorOffset;
+            newComment.focusNodeID = focusNode.parentNode.id;
+            newComment.focusOffset = seltxt.focusOffset;
+            newComment.posX = x;
+            newComment.posY = y;
+            
+            //X.value = newComment.anchorNodeID;
+            //Y.value = newComment.focusNodeID;
+            
+            var newCommentIcon = newComment.createComment();
+            document.getElementById("code").prepend(newCommentIcon);
+            $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
+            $(`#${newCommentIcon.id}`).addClass("open");
+            $(`#${newCommentIcon.id}Form`).css("visibility","visible");
+            
+            creatingComment = true;
+         } else {
+            alert("There is a comment that is unfinished creating.");
+         }
+      } else {
+         alert("Select text to comment.");
+      }
    });
 
    /*document.onselectionchange = function() {
@@ -104,11 +162,12 @@
    // CHANNELS WEBSOCKET
    const scSocket = new WebSocket('ws://' + window.location.host + "/ws/sourcecode/" + "{{sc.id}}" + '/');
    
+   // RECEIVE FROM WEBSOCKET
    scSocket.onmessage = function(e){
       var data = JSON.parse(e.data);
       var todoType = data['todoType'];
       
-      if (todoType == "comment"){
+      if (todoType == "commentCreated"){
          var cid = data['cId'];
          var seltxt = data['seltxt'];
          var anchorNodeID = data['anchorNodeID'];
@@ -130,12 +189,13 @@
          newComment.posY = posy;
          newComment.text = text;
          
-         //alert(newComment.posX + "|" + newComment.posY);
-         
-         var newCommentIcon = newComment.createComment();
+         var newCommentIcon = newComment.deleteComment();
          document.getElementById("code").prepend(newCommentIcon);
          $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
-      } else if (todoType == "message"){
+      } else if (todoType == "commentDeleted"){
+         var cid = data['cId'];
+         cancelComment(cid);
+      }else if (todoType == "messageSent"){
          var muserid = data['userid'];
          var mcontent = data['content'];
          var mtimestamp = data['timestamp'];
@@ -171,16 +231,6 @@
          highlighted = highlighted.replace(htmlEntities[i][0], htmlEntities[i][1]);
       }
       
-      
-      // ADD NODES BY LINE
-      var bylines = highlighted.split("\n");
-      for (var i = 0; i < bylines.length; i++){
-         var oneline = bylines[i];
-         bylines[i] = `<span class='line' data-lineNumber='${i+1}'>` + oneline + "</span>";
-      }
-      var line = bylines.join("\n");
-      document.getElementById("code").innerHTML = line;
-      
       // ADD NODES BY LINE
       var bylines = highlighted.split("\n");
       for (var i = 0; i < bylines.length; i++){
@@ -207,7 +257,7 @@
          var commentlist = {{commentlist|safe}};
          for (var i = 0; i < commentlist.length; i++){
             var newComment = Object.create(Comment);
-            newComment.id = commentlist[i]["fields"].idNumber;
+            newComment.id = commentlist[i]["pk"];
             newComment.seltxt = commentlist[i]["fields"].seltxt;
             newComment.anchorNodeID = commentlist[i]["fields"].anchorNodeID;
             newComment.anchorOffset = commentlist[i]["fields"].anchorOffset;
@@ -217,7 +267,7 @@
             newComment.posY = commentlist[i]["fields"].posY;
             newComment.text = commentlist[i]["fields"].text;
             
-            var newCommentIcon = newComment.createComment();
+            var newCommentIcon = newComment.deleteComment();
             
             document.getElementById("code").prepend(newCommentIcon);
             $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
@@ -330,7 +380,103 @@
          });
          
          return icon;
+      },
+      deleteComment() {
+         var id = this.id;
+         var seltxt = this.seltxt;
+         var anchorNodeID = this.anchorNodeID;
+         var anchorOffset = this.anchorOffset;
+         var focusNodeID = this.focusNodeID;
+         var focusOffset = this.focusOffset;
+         var posX = this.posX;
+         var posY = this.posY;
+         var text = this.text;
+         var commentForm = document.createElement("div");
+         commentForm.className = "commentForm";
+         commentForm.id = `comment${this.id}Form`;
+         var commentContent = document.createElement("textarea");
+         commentContent.innerHTML = text;
+         commentContent.id = `comment${this.id}Text`;
+         commentContent.className = "commentContent";
+         commentContent.setAttribute("type", "text");
+         commentContent.setAttribute("id", `comment${this.id}Content`);
+         commentForm.appendChild(commentContent);
+         var commentDeleteBtn = document.createElement("input");
+         commentDeleteBtn.className = "commentCancelBtn";
+         commentDeleteBtn.setAttribute("id", "commentDelteBtn");
+         commentDeleteBtn.type = "button";
+         commentDeleteBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            deleteComment(id);
+         });
+         commentDeleteBtn.setAttribute("value", "Delete");
+         commentForm.appendChild(commentDeleteBtn);
+         var commentSaveBtn = document.createElement("input");
+         commentSaveBtn.className = "commentSaveBtn";
+         commentSaveBtn.setAttribute("id", "commentSaveBtn");
+         commentSaveBtn.type = "button";
+         commentSaveBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            saveComment(id, seltxt, anchorNodeID, anchorOffset, focusNodeID, focusOffset, posX, posY, text);
+         });
+         commentSaveBtn.setAttribute("value", "Save");
+         commentForm.appendChild(commentSaveBtn);
+         
+         var icon = document.createElement("div");
+         icon.className = "commentIcon";
+         icon.id = `comment${this.id}`;
+         icon.appendChild(commentForm);
+         //icon.css({"position": "absolute", "left": `${this.posX}px`, "top": `${this.posY}px`});
+         //CLICK TOGGLE - OPEN & CLOSE
+         icon.addEventListener('click', function(e){
+            if ($(`#${e.target.id}`).hasClass("commentIcon") == true){
+               if ($(`#${e.target.id}`).hasClass("open")){
+                  $(`#${e.target.id}`).removeClass("open");
+                  $(`#${e.target.id}Form`).css("visibility","hidden");
+               } else {
+                  $(`#${e.target.id}`).addClass("open");
+                  $(`#${e.target.id}Form`).css("visibility","visible");
+               }
+            }
+         });
+         
+         return icon;
       }
+   }
+
+   // CANCEL COMMENT
+   function cancelComment(commentID){
+      creatingComment = false;
+      document.getElementById(`comment${commentID}`).remove();
+      window.getSelection().removeAllRanges();
+   }
+
+   // DELETE COMMENT
+   function deleteComment(commentID){
+      $.ajax(
+      {
+         url: "{% url 'deleteComment' %}",
+         type: "GET",
+         data:{
+            cId: commentID,
+         },
+         success: function (response){
+            //alert("SUCCESS\n" + response);
+            if (response == "DELETED"){
+               scSocket.send(JSON.stringify({
+                  'todoType': "commentDeleted",
+                  'cId': commentID,
+               }));
+               
+               cancelComment(commentID);
+            } else if (response == "NO ACCESS"){
+               alert("You can't delete a comment that someone else has created.");
+            }
+         },
+         error: function (response){
+            alert("ERROR!!\n" + response);
+         }
+      });
    }
 
    // MESSAGE OBJECT
@@ -392,71 +538,45 @@
          document.getElementById("chatHistory").appendChild(divIncoming);
       }
    }
- 
-   
-   // GET SELECTION
-   function getSelectedText(e) {
-      if(window.getSelection) {
-         var seltxt = window.getSelection();
-         var {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection();
-         if (seltxt.toString().length > 0 && e.target.closest("#code").id == "code"){
-            
-            //document.designMode = "on";
-            //document.execCommand("HiliteColor", false, "yellow");
-            //document.designMode = "off";
-            
-            var newComment = Object.create(Comment);
-            newComment.id = id +1;
-            id = id + 1;
-            newComment.seltxt = seltxt.toString();
-            newComment.anchorNodeID = anchorNode.parentNode.id;
-            newComment.anchorOffset = seltxt.anchorOffset;
-            newComment.focusNodeID = focusNode.parentNode.id;
-            newComment.focusOffset = seltxt.focusOffset;
-            newComment.posX = x;
-            newComment.posY = y;
-            
-            //X.value = newComment.anchorNodeID;
-            //Y.value = newComment.focusNodeID;
-            
-            var newCommentIcon = newComment.createComment();
-            document.getElementById("code").prepend(newCommentIcon);
-            $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
-         }
-      }
-   }
-   
-   // CANCEL COMMENT
-   function cancelComment(commentID){
-      document.getElementById(`comment${commentID}`).remove();
-   }
    
    //SAVE COMMENT
    function saveComment(id, seltxt, anchorNodeID, anchorOffset, focusNodeID, focusOffset, posX, posY, text){
       $.ajax(
       {
-         url: "{% url 'saveComment' %}",
+         url: "{% url 'getLatestCommentId' %}",
          type: "GET",
-         data:{
-             scId: {{sc.id}},
-             id: id,
-             seltxt: seltxt,
-             anchorNodeID: anchorNodeID,
-             anchorOffset: anchorOffset,
-             focusNodeID: focusNodeID,
-             focusOffset: focusOffset,
-             posX: posX,
-             posY: posY,
-             text: $(`#comment${id}Content`).val(),
-         },
          success: function (response){
-            document.getElementById(`comment${id}`).remove();
-            //alert("SUCCESS\n" + response);
             
-            scSocket.send(JSON.stringify({
-               'todoType': "comment",
-               'cId': response,
-            }));
+            $.ajax(
+            {
+               url: "{% url 'saveComment' %}",
+               type: "GET",
+               data:{
+                   scId: {{sc.id}},
+                   id: Number(response),
+                   seltxt: seltxt,
+                   anchorNodeID: anchorNodeID,
+                   anchorOffset: anchorOffset,
+                   focusNodeID: focusNodeID,
+                   focusOffset: focusOffset,
+                   posX: posX,
+                   posY: posY,
+                   text: $(`#comment${id}Content`).val(),
+               },
+               success: function (response){
+                  document.getElementById(`comment${id}`).remove();
+                  creatingComment = false;
+                  //alert("SUCCESS\n" + response);
+                  
+                  scSocket.send(JSON.stringify({
+                     'todoType': "commentCreated",
+                     'cId': response,
+                  }));
+               },
+               error: function (response){
+                  alert("ERROR!!\n" + response);
+               }
+            });
          },
          error: function (response){
             alert("ERROR!!\n" + response);
@@ -464,6 +584,7 @@
       });
    }
 
+   // SAVE MESSAGE
    function sendMessage(){
       var messageContent = chatInput.value;
       
@@ -480,7 +601,7 @@
             //alert("SUCCESS\n" + response);
             
             scSocket.send(JSON.stringify({
-               'todoType': "message",
+               'todoType': "messageSent",
                'messageId': response,
             }));
             

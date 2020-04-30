@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block title%}
+   CodeTaka
+{% endblock %}
+
 {% block content %}
 
    <div id="classCreate">
@@ -69,12 +73,25 @@
    function createClass(){
       event.preventDefault();
       
-      classSocket.send(JSON.stringify({
-         'className': $("#classCreateName").val(),
-         'userName': "{{user}}",
-         
-      }));
-      $("#classCreateName").value = "";
+      $.ajax(
+      {
+         url: "{% url 'addClass' %}",
+         type: "GET",
+         data:{
+            classname: $("#classCreateName").val()
+         },
+         success: function (response){
+            //alert("SUCCESS\n" + response);
+            
+            classSocket.send(JSON.stringify({
+               'classId': response,
+            }));
+            $("#classCreateName").value = "";
+         },
+         error: function (response){
+            alert("ERROR!!\n" + response);
+         }
+      });
    }
 
 </script>
