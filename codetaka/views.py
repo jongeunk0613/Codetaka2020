@@ -5,6 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils import timezone
 from json import dumps
 import json
 
@@ -64,7 +65,7 @@ def classList(request):
 @login_required
 def addClass(request):
    if request.method == "GET":
-      newClass = Class(user=request.user, name=request.GET['classname'])
+      newClass = Class(user=request.user, name=request.GET['classname'], timestamp=timezone.now())
       newClass.save()
       return HttpResponse(newClass.id)
    else:
@@ -135,7 +136,7 @@ def getLatestCommentId(request):
 def saveComment(request):
    if request.method == "GET":
       scId = SourceCode.objects.only('id').get(id = request.GET['scId'])
-      comment = Comment.objects.create(user = request.user, scId = scId, seltxt=request.GET['seltxt'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],posX=request.GET['posX'],posY=request.GET['posY'],text=request.GET['text'])
+      comment = Comment.objects.create(user = request.user, scId = scId, seltxt=request.GET['seltxt'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],posX=request.GET['posX'],posY=request.GET['posY'],text=request.GET['text'], timestamp = timezone.now(), lastEdited = timezone.now())
       comment.save()
       return HttpResponse(comment.id)
    else:
@@ -153,6 +154,18 @@ def deleteComment(request):
          return HttpResponse("NO ACCESS")
    else:
       return HttpResponse("NOT A GET REQUEST")
+      
+# SAVE EDITED COMMENT
+@login_required
+def saveEditedComment(request):
+   if request.method == "GET":
+      comment = Comment.objects.get(pk = request.GET['cId'])
+      comment.text = request.GET['text']
+      comment.lastEdited = timezone.now()
+      comment.save()
+      return HttpResponse(comment.id)
+   else:
+      return HttpResponse('error')
 
 # CREATE MESSAGE
 @login_required
@@ -161,7 +174,7 @@ def sendMessage(request):
       sc = SourceCode.objects.only('id').get(id = request.GET['scId'])
       user = request.user
       ofClass = Class.objects.get(name=request.GET['classname'])
-      message = Message.objects.create(user = user, sc = sc, ofClass = ofClass, content = request.GET['messageContent'])
+      message = Message.objects.create(user = user, sc = sc, ofClass = ofClass, content = request.GET['messageContent'], timestamp = timezone.now())
       message.save()
       return HttpResponse(message.id)
    return HttpResponse("NOT A GET")

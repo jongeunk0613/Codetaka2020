@@ -189,13 +189,40 @@
          newComment.posY = posy;
          newComment.text = text;
          
-         var newCommentIcon = newComment.deleteComment();
+         var newCommentIcon = newComment.fixedComment();
+         document.getElementById("code").prepend(newCommentIcon);
+         $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
+      } else if (todoType == "commentEdited"){
+         var cid = data['cId'];
+         var seltxt = data['seltxt'];
+         var anchorNodeID = data['anchorNodeID'];
+         var anchorOffset = data['anchorOffset'];
+         var focusNodeID = data['focusNodeID'];
+         var focusOffset = data['focusOffset'];
+         var posx = data['posx'];
+         var posy = data['posy'];
+         var text = data['text'];
+         
+         document.getElementById(`comment${cid}`).remove();
+         
+         var newComment = Object.create(Comment);
+         newComment.id = cid;
+         newComment.seltxt = seltxt;
+         newComment.anchorNodeID = anchorNodeID;
+         newComment.anchorOffset = anchorOffset;
+         newComment.focusNodeID = focusNodeID;
+         newComment.focusOffset = focusOffset;
+         newComment.posX = posx;
+         newComment.posY = posy;
+         newComment.text = text;
+         
+         var newCommentIcon = newComment.fixedComment();
          document.getElementById("code").prepend(newCommentIcon);
          $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
       } else if (todoType == "commentDeleted"){
          var cid = data['cId'];
          cancelComment(cid);
-      }else if (todoType == "messageSent"){
+      } else if (todoType == "messageSent"){
          var muserid = data['userid'];
          var mcontent = data['content'];
          var mtimestamp = data['timestamp'];
@@ -267,7 +294,7 @@
             newComment.posY = commentlist[i]["fields"].posY;
             newComment.text = commentlist[i]["fields"].text;
             
-            var newCommentIcon = newComment.deleteComment();
+            var newCommentIcon = newComment.fixedComment();
             
             document.getElementById("code").prepend(newCommentIcon);
             $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
@@ -324,6 +351,7 @@
          var posX = this.posX;
          var posY = this.posY;
          var text = this.text;
+         var comment = this;
          var commentForm = document.createElement("div");
          commentForm.className = "commentForm";
          commentForm.id = `comment${this.id}Form`;
@@ -335,14 +363,13 @@
          commentForm.appendChild(commentMinimizeBtn);*/
          var commentContent = document.createElement("textarea");
          commentContent.innerHTML = text;
-         commentContent.id = `comment${this.id}Text`;
          commentContent.className = "commentContent";
          commentContent.setAttribute("type", "text");
          commentContent.setAttribute("id", `comment${this.id}Content`);
          commentForm.appendChild(commentContent);
          var commentCancelBtn = document.createElement("input");
          commentCancelBtn.className = "commentCancelBtn";
-         commentCancelBtn.setAttribute("id", "commentCancelBtn");
+         commentCancelBtn.setAttribute("id", `comment${this.id}CancelBtn`);
          commentCancelBtn.type = "button";
          commentCancelBtn.addEventListener('click', function(event) {
             event.preventDefault();
@@ -352,7 +379,7 @@
          commentForm.appendChild(commentCancelBtn);
          var commentSaveBtn = document.createElement("input");
          commentSaveBtn.className = "commentSaveBtn";
-         commentSaveBtn.setAttribute("id", "commentSaveBtn");
+         commentSaveBtn.setAttribute("id", `comment${this.id}SaveBtn`);
          commentSaveBtn.type = "button";
          commentSaveBtn.addEventListener('click', function(event) {
             event.preventDefault();
@@ -381,7 +408,7 @@
          
          return icon;
       },
-      deleteComment() {
+      fixedComment() {
          var id = this.id;
          var seltxt = this.seltxt;
          var anchorNodeID = this.anchorNodeID;
@@ -391,19 +418,20 @@
          var posX = this.posX;
          var posY = this.posY;
          var text = this.text;
+         var comment = this;
          var commentForm = document.createElement("div");
          commentForm.className = "commentForm";
          commentForm.id = `comment${this.id}Form`;
          var commentContent = document.createElement("textarea");
+         commentContent.readOnly = true;
          commentContent.innerHTML = text;
-         commentContent.id = `comment${this.id}Text`;
          commentContent.className = "commentContent";
          commentContent.setAttribute("type", "text");
          commentContent.setAttribute("id", `comment${this.id}Content`);
          commentForm.appendChild(commentContent);
          var commentDeleteBtn = document.createElement("input");
          commentDeleteBtn.className = "commentCancelBtn";
-         commentDeleteBtn.setAttribute("id", "commentDelteBtn");
+         commentDeleteBtn.setAttribute("id", `comment${this.id}DeleteBtn`);
          commentDeleteBtn.type = "button";
          commentDeleteBtn.addEventListener('click', function(event) {
             event.preventDefault();
@@ -411,16 +439,20 @@
          });
          commentDeleteBtn.setAttribute("value", "Delete");
          commentForm.appendChild(commentDeleteBtn);
-         var commentSaveBtn = document.createElement("input");
-         commentSaveBtn.className = "commentSaveBtn";
-         commentSaveBtn.setAttribute("id", "commentSaveBtn");
-         commentSaveBtn.type = "button";
-         commentSaveBtn.addEventListener('click', function(event) {
+         var commentEditBtn = document.createElement("input");
+         commentEditBtn.className = "commentSaveBtn";
+         commentEditBtn.setAttribute("id", `comment${this.id}EditBtn`);
+         commentEditBtn.type = "button";
+         commentEditBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            saveComment(id, seltxt, anchorNodeID, anchorOffset, focusNodeID, focusOffset, posX, posY, text);
+            commentContent.readOnly = false;
+            commentDeleteBtn.remove();
+            commentForm.appendChild(comment.createEditCancelBtn());
+            commentEditBtn.remove();
+            commentForm.appendChild(comment.createEditSaveBtn());
          });
-         commentSaveBtn.setAttribute("value", "Save");
-         commentForm.appendChild(commentSaveBtn);
+         commentEditBtn.setAttribute("value", "Edit");
+         commentForm.appendChild(commentEditBtn);
          
          var icon = document.createElement("div");
          icon.className = "commentIcon";
@@ -441,6 +473,74 @@
          });
          
          return icon;
+      },
+      createDeleteBtn() {
+         var id = this.id;
+         var commentDeleteBtn = document.createElement("input");
+         commentDeleteBtn.className = "commentCancelBtn";
+         commentDeleteBtn.setAttribute("id", `comment${id}DeleteBtn`);
+         commentDeleteBtn.type = "button";
+         commentDeleteBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            deleteComment(id);
+         });
+         commentDeleteBtn.setAttribute("value", "Delete");
+         
+         return commentDeleteBtn;
+      },
+      createEditBtn(){
+         var comment = this;
+         var commentEditBtn = document.createElement("input");
+         commentEditBtn.className = "commentSaveBtn";
+         commentEditBtn.setAttribute("id", `comment${comment.id}EditBtn`);
+         commentEditBtn.type = "button";
+         commentEditBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById(`comment${comment.id}Content`).readOnly = false;
+            document.getElementById(`comment${comment.id}DeleteBtn`).remove();
+            document.getElementById(`comment${comment.id}Form`).appendChild(comment.createEditCancelBtn());
+            commentEditBtn.remove();
+            document.getElementById(`comment${comment.id}Form`).appendChild(comment.createEditSaveBtn());
+         });
+         commentEditBtn.setAttribute("value", "Edit");
+         
+         return commentEditBtn;
+      },
+      createEditCancelBtn() {
+         var comment = this;
+         var beforeEdit = $(`#comment${comment.id}Content`).val();
+         var commentEditCancelBtn = document.createElement("input");
+         commentEditCancelBtn.className = "commentCancelBtn";
+         commentEditCancelBtn.setAttribute("id", `comment${comment.id}EditCancelBtn`);
+         commentEditCancelBtn.type = "button";
+         commentEditCancelBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById(`comment${comment.id}Content`).value = beforeEdit;
+            commentEditCancelBtn.remove();
+            document.getElementById(`comment${comment.id}Form`).appendChild(comment.createDeleteBtn());
+            document.getElementById(`comment${comment.id}Content`).setAttribute("readonly", "true");
+            document.getElementById(`comment${comment.id}EditSaveBtn`).remove();
+            document.getElementById(`comment${comment.id}Form`).appendChild(comment.createEditBtn());
+         });
+         commentEditCancelBtn.setAttribute("value", "Cancel");
+         
+         return commentEditCancelBtn;
+      },
+      createEditSaveBtn(){
+         var comment = this;
+         var commentEditSaveBtn = document.createElement("input");
+         commentEditSaveBtn.className = "commentSaveBtn";
+         commentEditSaveBtn.setAttribute("id", `comment${comment.id}EditSaveBtn`);
+         commentEditSaveBtn.type = "button";
+         commentEditSaveBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById(`comment${comment.id}Content`).setAttribute("readonly", "true");
+            var text = document.getElementById(`comment${comment.id}Content`).value;
+            saveEditedComment(comment.id, text);
+         });
+         commentEditSaveBtn.setAttribute("value", "Save");
+         
+         return commentEditSaveBtn
       }
    }
 
@@ -479,66 +579,6 @@
       });
    }
 
-   // MESSAGE OBJECT
-   const Message = {
-      userid: 0,
-      content: "",
-      timestamp: "",
-      createOutgoingMessage() {
-         var userid = this.userid;
-         var mcontent = this.content;
-         var timestamp = this.timestamp;
-         var year = timestamp.substring(0,4);
-         var month = timestamp.substring(5,7);
-         var day = timestamp.substring(8,10);
-         var hour = timestamp.substring(11,13);
-         var minute = timestamp.substring(14,16);
-         
-         var divOutgoing = document.createElement("div");
-         divOutgoing.className = "outgoing_msg";
-         var divSent = document.createElement("div");
-         divSent.className = "sent_msg";
-         divOutgoing.appendChild(divSent);
-         var content = document.createElement("p");
-         content.innerHTML = mcontent;
-         divSent.appendChild(content);
-         var timedate = document.createElement("span");
-         timedate.className = "time_date";
-         timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
-         divSent.appendChild(timedate);
-         
-         document.getElementById("chatHistory").appendChild(divOutgoing);
-      },
-      createIncomingMessage(){
-         var userid = this.userid;
-         var mcontent = this.content;
-         var timestamp = this.timestamp;
-         var year = timestamp.substring(0,4);
-         var month = timestamp.substring(5,7);
-         var day = timestamp.substring(8,10);
-         var hour = timestamp.substring(11,13);
-         var minute = timestamp.substring(14,16);
-         
-         var divIncoming = document.createElement("div");
-         divIncoming.className = "incoming_msg";
-         var divReceived = document.createElement("div");
-         divReceived.className = "received_msg";
-         divIncoming.appendChild(divReceived);
-         var divReceivedContent = document.createElement("div");
-         divReceivedContent.className = "received_withd_msg";
-         divReceived.appendChild(divReceivedContent);
-         var content = document.createElement("p");
-         content.innerHTML = mcontent;
-         divReceivedContent.appendChild(content);
-         var timedate = document.createElement("span");
-         timedate.className = "time_date";
-         timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
-         divReceivedContent.appendChild(timedate);
-         
-         document.getElementById("chatHistory").appendChild(divIncoming);
-      }
-   }
-   
    //SAVE COMMENT
    function saveComment(id, seltxt, anchorNodeID, anchorOffset, focusNodeID, focusOffset, posX, posY, text){
       $.ajax(
@@ -582,6 +622,90 @@
             alert("ERROR!!\n" + response);
          }
       });
+   }
+
+   // SAVE EDITED COMMENT
+   function saveEditedComment(id, text){
+      $.ajax(
+      {
+         url: "{% url 'saveEditedComment' %}",
+         type: "GET",
+         data:{
+            cId: id,
+            text: text,
+         },
+         success: function (response){
+            //alert("SUCCESS\n" + response);
+            
+            scSocket.send(JSON.stringify({
+               'todoType': "commentEdited",
+               'cId': response,
+            }));
+         },
+         error: function (response){
+            alert("ERROR!!\n" + response);
+         }
+      });
+   }
+
+   // MESSAGE OBJECT
+   const Message = {
+      userid: 0,
+      content: "",
+      timestamp: "",
+      createOutgoingMessage() {
+         var userid = this.userid;
+         var mcontent = this.content;
+         var timestamp = this.timestamp;
+         var year = timestamp.substring(0,4);
+         var month = timestamp.substring(5,7);
+         var day = timestamp.substring(8,10);
+         var hour = timestamp.substring(11,13);
+         var minute = timestamp.substring(14,16);
+         
+         var divOutgoing = document.createElement("div");
+         divOutgoing.className = "outgoing_msg";
+         var divSent = document.createElement("div");
+         divSent.className = "sent_msg";
+         divOutgoing.appendChild(divSent);
+         var content = document.createElement("p");
+         content.innerHTML = mcontent;
+         divSent.appendChild(content);
+         var timedate = document.createElement("span");
+         timedate.className = "time_date_out";
+         timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         divSent.appendChild(timedate);
+         
+         document.getElementById("chatHistory").appendChild(divOutgoing);
+      },
+      createIncomingMessage(){
+         var userid = this.userid;
+         var mcontent = this.content;
+         var timestamp = this.timestamp;
+         var year = timestamp.substring(0,4);
+         var month = timestamp.substring(5,7);
+         var day = timestamp.substring(8,10);
+         var hour = timestamp.substring(11,13);
+         var minute = timestamp.substring(14,16);
+         
+         var divIncoming = document.createElement("div");
+         divIncoming.className = "incoming_msg";
+         var divReceived = document.createElement("div");
+         divReceived.className = "received_msg";
+         divIncoming.appendChild(divReceived);
+         var divReceivedContent = document.createElement("div");
+         divReceivedContent.className = "received_withd_msg";
+         divReceived.appendChild(divReceivedContent);
+         var content = document.createElement("p");
+         content.innerHTML = mcontent;
+         divReceivedContent.appendChild(content);
+         var timedate = document.createElement("span");
+         timedate.className = "time_date_in";
+         timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         divReceivedContent.appendChild(timedate);
+         
+         document.getElementById("chatHistory").appendChild(divIncoming);
+      },
    }
 
    // SAVE MESSAGE

@@ -104,6 +104,28 @@ class scConsumer(WebsocketConsumer):
             'text': comment.text,
             }
          )
+      elif (todoType == "commentEdited") is True:
+         cId = data['cId']
+         
+         comment = Comment.objects.get(pk=cId)
+         
+         #Send message to room group
+         async_to_sync(self.channel_layer.group_send)(
+            self.sc_group_name, {
+            'type': 'commentEdited',
+            'todoType': "commentEdited",
+            'cId': comment.pk,
+            'seltxt': comment.seltxt,
+            'anchorNodeID': comment.anchorNodeID,
+            'anchorOffset': comment.anchorOffset,
+            'focusNodeID': comment.focusNodeID,
+            'focusOffset': comment.focusOffset,
+            'posx': comment.posX,
+            'posy': comment.posY,
+            'text': comment.text,
+            }
+         )
+      
       elif (todoType == "commentDeleted") is True:
          cId = data['cId']
          
@@ -139,6 +161,22 @@ class scConsumer(WebsocketConsumer):
       # Send message to WebSocket
       self.send(text_data=json.dumps({
          'todoType': "commentCreated",
+         'cId': event['cId'],
+         'seltxt': event['seltxt'],
+         'anchorNodeID': event['anchorNodeID'],
+         'anchorOffset': event['anchorOffset'],
+         'focusNodeID': event['focusNodeID'],
+         'focusOffset': event['focusOffset'],
+         'posx': event['posx'],
+         'posy': event['posy'],
+         'text': event['text'],
+                                     }))
+   # Receive message from room group
+   def commentEdited(self, event):
+   
+   # Send message to WebSocket
+      self.send(text_data=json.dumps({
+         'todoType': "commentEdited",
          'cId': event['cId'],
          'seltxt': event['seltxt'],
          'anchorNodeID': event['anchorNodeID'],

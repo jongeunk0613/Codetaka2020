@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 class Class(models.Model):
    user = models.ForeignKey(User, on_delete=models.CASCADE)
    name = models.CharField(max_length=254)
-   timestamp = models.DateTimeField(auto_now_add=True)
+   timestamp = models.DateTimeField()
 
 class SourceCode(models.Model):
    name = models.CharField(max_length=200, blank=True)
@@ -25,7 +25,8 @@ class Comment(models.Model):
    posX = models.PositiveIntegerField(default = 0)
    posY = models.PositiveIntegerField(default = 0)
    text = models.TextField()
-   timestamp = models.DateTimeField(auto_now_add=True)
+   timestamp = models.DateTimeField()
+   lastEdited = models.DateTimeField()
 
    def __str__(self):
       return "[" + str(self.id) + "]: " + self.text
@@ -36,4 +37,4 @@ class Message(models.Model):
    sc = models.ForeignKey(SourceCode, on_delete=models.CASCADE)
    ofClass = models.ForeignKey(Class, on_delete=models.CASCADE)
    content = models.TextField()
-   timestamp = models.DateTimeField(auto_now_add=True)
+   timestamp = models.DateTimeField()

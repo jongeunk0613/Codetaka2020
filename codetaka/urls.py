@@ -16,5 +16,6 @@ urlpatterns = [
     path('getLatestCommentId/', views.getLatestCommentId, name='getLatestCommentId'),
     path('saveComment/', views.saveComment, name='saveComment'),
     path('deleteComment/', views.deleteComment, name='deleteComment'),
+    path('saveEditedComment/', views.saveEditedComment, name='saveEditedComment'),
     path('sendMessage/', views.sendMessage, name='sendMessage'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
