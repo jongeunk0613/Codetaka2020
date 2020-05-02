@@ -127,14 +127,24 @@
             //document.execCommand("HiliteColor", false, "yellow");
             //document.designMode = "off";
             
+            var anchorNumber = Number(anchorNode.parentNode.id.substring(2));
+            var focusNumber = Number(focusNode.parentNode.id.substring(2));
+            
             var newComment = Object.create(Comment);
             newComment.id = id;
             id = id;
             newComment.seltxt = seltxt.toString();
-            newComment.anchorNodeID = anchorNode.parentNode.id;
-            newComment.anchorOffset = anchorOffset;
-            newComment.focusNodeID = focusNode.parentNode.id;
-            newComment.focusOffset = focusOffset;
+            if (anchorNumber < focusNumber){
+               newComment.anchorNodeID = anchorNode.parentNode.id;
+               newComment.anchorOffset = anchorOffset;
+               newComment.focusNodeID = focusNode.parentNode.id;
+               newComment.focusOffset = focusOffset;
+            } else {
+               newComment.anchorNodeID = focusNode.parentNode.id;
+               newComment.anchorOffset = focusOffset;
+               newComment.focusNodeID = anchorNode.parentNode.id;
+               newComment.focusOffset = anchorOffset;
+            }
             newComment.posX = x;
             newComment.posY = y;
             
@@ -147,7 +157,9 @@
             $(`#${newCommentIcon.id}`).addClass("open");
             $(`#${newCommentIcon.id}Form`).css("visibility","visible");
             
-            window.getSelection().setBaseAndExtent(anchorNode, 0, focusNode, focusNode.data.length);
+            var start = document.getElementById(newComment.anchorNodeID);
+            var end = document.getElementById(newComment.focusNodeID);
+            window.getSelection().setBaseAndExtent(start, 0, end, 1);
             document.designMode = "on";
             document.execCommand("HiliteColor", false, "#fffead");
             document.designMode = "off";
@@ -203,6 +215,14 @@
          var newCommentIcon = newComment.fixedComment();
          document.getElementById("code").prepend(newCommentIcon);
          $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
+         
+         var start = document.getElementById(newComment.anchorNodeID);
+         var end = document.getElementById(newComment.focusNodeID);
+         window.getSelection().setBaseAndExtent(start, 0, end, 1);
+         document.designMode = "on";
+         document.execCommand("HiliteColor", false, "#fffead");
+         document.designMode = "off";
+         window.getSelection().removeAllRanges();
          
       } else if (todoType == "commentEdited"){
          var cid = data['cId'];
