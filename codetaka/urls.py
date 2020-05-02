@@ -18,4 +18,6 @@ urlpatterns = [
     path('deleteComment/', views.deleteComment, name='deleteComment'),
     path('saveEditedComment/', views.saveEditedComment, name='saveEditedComment'),
     path('sendMessage/', views.sendMessage, name='sendMessage'),
+    
+    path('trying/', views.trying, name='trying'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -470,3 +470,39 @@ pre {
 
 .minimize{
 }
+
+
+/*TRY*/
+#try{
+   position: absolute;
+   white-space: pre;
+   top: 10%;
+   left: 5%;
+   width: 40%;
+   height: 85%;
+   border: 1px solid red;
+}
+
+#trycontent{
+   position: absolute;
+   top: 10%;
+   width: 40%;
+   left: 50%;
+   height: 85%;
+   border: 1px solid blue;
+}
+
+#haha{
+   display: flex;
+   flex-direction: row;
+   justify-content: center;
+}
+
+#test{
+   position: absolute;
+   top: 10%;
+   width: 40%;
+   left: 50%;
+   height: 85%;
+   border: 1px solid blue;
+}

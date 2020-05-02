@@ -178,3 +178,9 @@ def sendMessage(request):
       message.save()
       return HttpResponse(message.id)
    return HttpResponse("NOT A GET")
+
+
+
+# TESTING
+def trying(request):
+   return render(request, "trying.html")
