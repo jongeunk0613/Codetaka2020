@@ -128,6 +128,8 @@ class scConsumer(WebsocketConsumer):
       
       elif (todoType == "commentDeleted") is True:
          cId = data['cId']
+         anchorNodeID = data['anchorNodeID']
+         focusNodeID = data['focusNodeID']
          
          #Send message to room group
          async_to_sync(self.channel_layer.group_send)(
@@ -135,6 +137,8 @@ class scConsumer(WebsocketConsumer):
             'type': 'commentDeleted',
             'todoType': "commentDeleted",
             'cId': cId,
+            'anchorNodeID': anchorNodeID,
+            'focusNodeID': focusNodeID,
             }
          )
       elif (todoType == "messageSent") is True:
@@ -195,6 +199,8 @@ class scConsumer(WebsocketConsumer):
       self.send(text_data=json.dumps({
          'todoType': "commentDeleted",
          'cId': event['cId'],
+         'anchorNodeID': event['anchorNodeID'],
+         'focusNodeID': event['focusNodeID'],
                                      }))
                                      
    # Receive message from room group

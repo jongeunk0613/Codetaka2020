@@ -233,7 +233,9 @@
          $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
       } else if (todoType == "commentDeleted"){
          var cid = data['cId'];
-         cancelComment(cid);
+         var anchorNodeID = data['anchorNodeID'];
+         var focusNodeID = data['focusNodeID'];
+         cancelComment(cid, anchorNodeID, focusNodeID);
       } else if (todoType == "messageSent"){
          var muserid = data['userid'];
          var mcontent = data['content'];
@@ -481,7 +483,7 @@
          commentCancelBtn.type = "button";
          commentCancelBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            cancelComment(id);
+            cancelComment(id, anchorNodeID, focusNodeID);
          });
          commentCancelBtn.setAttribute("value", "Cancel");
          commentForm.appendChild(commentCancelBtn);
@@ -543,7 +545,7 @@
          commentDeleteBtn.type = "button";
          commentDeleteBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            deleteComment(id);
+            deleteComment(id, anchorNodeID, focusNodeID);
          });
          commentDeleteBtn.setAttribute("value", "Delete");
          commentForm.appendChild(commentDeleteBtn);
@@ -584,13 +586,15 @@
       },
       createDeleteBtn() {
          var id = this.id;
+         var anchorNodeID = this.anchorNodeID;
+         var focusNodeID = this.focusNodeID;
          var commentDeleteBtn = document.createElement("input");
          commentDeleteBtn.className = "commentCancelBtn";
          commentDeleteBtn.setAttribute("id", `comment${id}DeleteBtn`);
          commentDeleteBtn.type = "button";
          commentDeleteBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            deleteComment(id);
+            deleteComment(id, anchorNodeID, focusNodeID);
          });
          commentDeleteBtn.setAttribute("value", "Delete");
          
@@ -653,14 +657,20 @@
    }
 
    // CANCEL COMMENT
-   function cancelComment(commentID){
+   function cancelComment(commentID, anchorNodeID, focusNodeID){
       creatingComment = false;
       document.getElementById(`comment${commentID}`).remove();
+      var start = document.getElementById(anchorNodeID);
+      var end = document.getElementById(focusNodeID);
+      window.getSelection().setBaseAndExtent(start, 0, end, 1);
+      document.designMode = "on";
+      document.execCommand("RemoveFormat", false, null);
+      document.designMode = "off";
       window.getSelection().removeAllRanges();
    }
 
    // DELETE COMMENT
-   function deleteComment(commentID){
+   function deleteComment(commentID, anchorNodeID, focusNodeID){
       $.ajax(
       {
          url: "{% url 'deleteComment' %}",
@@ -670,15 +680,18 @@
          },
          success: function (response){
             //alert("SUCCESS\n" + response);
-            if (response == "DELETED"){
+            if (response == "NO ACCESS"){
+               alert("You can't delete a comment that someone else has created.");
+            } else {
+               response = response.split(" ");
                scSocket.send(JSON.stringify({
                   'todoType': "commentDeleted",
                   'cId': commentID,
+                  'anchorNodeID': response[1],
+                  'focusNodeID': response[2],
                }));
                
-               cancelComment(commentID);
-            } else if (response == "NO ACCESS"){
-               alert("You can't delete a comment that someone else has created.");
+               cancelComment(response[0], response[1], response[2]);
             }
          },
          error: function (response){

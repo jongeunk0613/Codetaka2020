@@ -148,8 +148,9 @@ def deleteComment(request):
    if request.method == "GET":
       comment = Comment.objects.get(pk = request.GET['cId'])
       if request.user == comment.user:
+         data = str(comment.id) + " " + comment.anchorNodeID + " " + comment.focusNodeID
          comment.delete()
-         return HttpResponse("DELETED")
+         return HttpResponse(data)
       else:
          return HttpResponse("NO ACCESS")
    else:
