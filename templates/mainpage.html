@@ -53,12 +53,12 @@
 
       <div id="secChat">
          
-         X <input id="X" disabled><br>
+         <!--X <input id="X" disabled><br>
          Y <input id="Y" disabled><br>
          X <input id="A" disabled><br>
          Y <input id="B" disabled><br>
-         <!--P <input id="P" disabled>
-         <textarea id="try" style="width: 100%; height: 80%;"></textarea>
+         P <input id="P" disabled>
+         <textarea id="try" style="width: 100%; height: 80%;"></textarea>-->
          <div id="chatLog" class="mesgs">
             <div id="chatHistory" class="msg_history">
             </div>
@@ -67,7 +67,6 @@
             <textarea id="chatInput"></textarea>
             <input id="chatSubmit" onclick="sendMessage()" type="button" value="Send"></input>
          </div>
-         -->
       </div>
    </div>
 
@@ -174,13 +173,13 @@
       }
    });
 
-   document.onselectionchange = function() {
+   /*document.onselectionchange = function() {
       let {anchorNode, anchorOffset, focusNode, focusOffset} = document.getSelection();
       X.value = `${anchorNode.parentNode.id}:${anchorOffset}`;
       Y.value = `${focusNode.parentNode.id}:${focusOffset}`;
       A.value = `${anchorNode.parentNode.id}:${0}`;
       B.value = `${focusNode.parentNode.id}:${focusNode.data.length}`;
-   }
+   }*/
 
    // CHANNELS WEBSOCKET
    const scSocket = new WebSocket('ws://' + window.location.host + "/ws/sourcecode/" + "{{sc.id}}" + '/');
