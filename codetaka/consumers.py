@@ -158,6 +158,16 @@ class scConsumer(WebsocketConsumer):
             'timestamp': json.dumps(message.timestamp, cls=DjangoJSONEncoder),
             }
          )
+      elif (todoType == "autofocus") is True:
+         scrollPos = data['scrollPos']
+         
+         async_to_sync(self.channel_layer.group_send)(
+            self.sc_group_name, {
+            'type': 'autofocus',
+            'todoType': "autofocus",
+            'scrollPos': scrollPos,
+            }
+         )
       
    # Receive message from room group
    def commentCreated(self, event):
@@ -215,3 +225,12 @@ class scConsumer(WebsocketConsumer):
          'content': event['content'],
          'timestamp': json.dumps(event['timestamp'], cls=DjangoJSONEncoder),
                                      }))
+                                     
+    # Receive message from room group
+   def autofocus(self, event):
+    
+       # Send message to WebSocket
+       self.send(text_data=json.dumps({
+          'todoType': "autofocus",
+          'scrollPos': event['scrollPos'],
+                                      }))

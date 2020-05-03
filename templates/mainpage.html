@@ -36,6 +36,12 @@
       </div>
       
       <div id="codeMenu">
+         <label id="auto-focus" class="switch">
+            <label id="auto-focus-label"> Auto Focus</label>
+           <input id="auto-focus-value" type="checkbox">
+           <span class="slider round"></span>
+         </label>
+         <div id="divider1" class="vl"></div>
          <button id="menuBtnCreateComment"><i class = "fas fa-comment-alt"></i></button>
       </div>
       <div id="secCode">
@@ -81,6 +87,8 @@
    var target;
    var classname = "{{className}}";
    var userid = "{{user.id}}";
+   var autofocus = false;
+   var scrollPos = 0;
    var htmlEntities = [
       [/&amp;/g, "&"],
       [/&lt;/g, "<"],
@@ -113,7 +121,17 @@
          focusNode = seltxt.focusNode;
          focusOffset = seltxt.focusNode.data.length;
          target = e.target;
+         
+         scrollPos = window.scrollY;
+         scSocket.send(JSON.stringify({
+            'todoType': "autofocus",
+            'scrollPos': scrollPos,
+         }));
       }
+   });
+   
+   document.getElementById("auto-focus-value").addEventListener('click', function(e){
+      autofocus = document.getElementById("auto-focus-value").checked;
    });
    
    // CREATE COMMENT
@@ -264,14 +282,19 @@
             var newMessage = Object.create(Message);
             newMessage.userid = muserid;
             newMessage.content = mcontent;
-            newMessage.timestamp = mtimestamp;
+            newMessage.timestamp = mtimestamp.substring(3, mtimestamp.length-3);
             newMessage.createOutgoingMessage();
          } else {
             var newMessage = Object.create(Message);
             newMessage.userid = muserid;
             newMessage.content = mcontent;
-            newMessage.timestamp = mtimestamp;
+            newMessage.timestamp = mtimestamp.substring(3, mtimestamp.length-3);
             newMessage.createIncomingMessage();
+         }
+      } else if (todoType == "autofocus"){
+         scrollPos = Number(data['scrollPos']);
+         if (autofocus == true){
+            window.scrollTo(0, scrollPos);
          }
       }
    }
