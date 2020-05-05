@@ -168,6 +168,32 @@ class scConsumer(WebsocketConsumer):
             'scrollPos': scrollPos,
             }
          )
+      elif (todoType == "speakerRequest") is True:
+         fromU = data['fromU']
+         toU = data['toU']
+         
+         async_to_sync(self.channel_layer.group_send)(
+            self.sc_group_name, {
+            'type': 'speakerRequest',
+            'todoType': "speakerRequest",
+            'fromU': fromU,
+            'toU': toU,
+            }
+         )
+      elif (todoType == "speakerRequestResponse") is True:
+         ownerU = data['ownerU']
+         requestU = data['requestU']
+         response = data['response']
+         
+         async_to_sync(self.channel_layer.group_send)(
+            self.sc_group_name, {
+            'type': 'speakerRequestResponse',
+            'todoType': "speakerRequestResponse",
+            'ownerU': ownerU,
+            'requestU': requestU,
+            'response': response,
+            }
+         )
       
    # Receive message from room group
    def commentCreated(self, event):
@@ -234,3 +260,24 @@ class scConsumer(WebsocketConsumer):
           'todoType': "autofocus",
           'scrollPos': event['scrollPos'],
                                       }))
+                                      
+   # Receive message from room group
+   def speakerRequest(self, event):
+      
+      # Send message to WebSocket
+      self.send(text_data=json.dumps({
+         'todoType': "speakerRequest",
+         'fromU': event['fromU'],
+         'toU': event['toU'],
+                                     }))
+                                     
+   # Receive message from room group
+   def speakerRequestResponse(self, event):
+      
+      # Send message to WebSocket
+      self.send(text_data=json.dumps({
+         'todoType': "speakerRequestResponse",
+         'ownerU': event['ownerU'],
+         'requestU': event['requestU'],
+         'response': event['response'],
+                                     }))

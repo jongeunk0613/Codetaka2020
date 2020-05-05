@@ -292,12 +292,15 @@
    color: #1e68a8;
 }
 
+.vl{
+   border-left: 1px solid #ddd;
+   height: 25px;
+}
+
 #divider1{
    position: absolute;
    right: 40px;
    top: 5px;
-   border-left: 1px solid #ddd;
-   height: 25px;
 }
 
 #auto-focus{
@@ -311,6 +314,43 @@
    font-size: 10px;
    top: -5px;
    text-align: center;
+}
+
+#divider2{
+   position: absolute;
+   right: 135px;
+   top: 5px;
+}
+
+#menuBtnSpeaker{
+   position: absolute;
+   right: 145px;
+   top: 7px;
+}
+
+#speakerIcon{
+   background-color: transparent;
+   font-size: 20px;
+   border: none;
+   color: #ccc;
+}
+
+#speaker:checked + label{
+   color: #1e68a8;
+}
+
+#speaker{
+   position: absolute;
+   opacity: 0;
+   cursor: pointer;
+   width: 20px;
+   height: 23px;
+}
+
+#divider3{
+   position: absolute;
+   right: 135px;
+   top: 5px;
 }
 
 /*-----CODE BODY-----*/
@@ -570,15 +610,15 @@ pre {
   transition: .4s;
 }
 
-input:checked + .slider {
+.switch input:checked + .slider {
   background-color: #1e68a8;
 }
 
-input:focus + .slider {
+.switch input:focus + .slider {
   box-shadow: 0 0 1px #1e68a8;
 }
 
-input:checked + .slider:before {
+.switch input:checked + .slider:before {
   -webkit-transform: translateX(20px);
   -ms-transform: translateX(20px);
   transform: translateX(20px);

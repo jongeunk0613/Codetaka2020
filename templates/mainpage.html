@@ -43,6 +43,13 @@
          </label>
          <div id="divider1" class="vl"></div>
          <button id="menuBtnCreateComment"><i class = "fas fa-comment-alt"></i></button>
+         <div id="divider2" class="vl"></div>
+         <label id="menuBtnSpeaker">
+            <input id="speaker" type="checkbox">
+            <label id="speakerIcon" class="fas fa-microphone-alt"></label>
+         </label>
+         <!--<button id="menuBtnSpeaker"><i class = "fas fa-microphone-alt"></i></button>-->
+         <div id="divider3" class="vl"></div>
       </div>
       <div id="secCode">
          <div id="showContent">
@@ -86,9 +93,10 @@
    var {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection();
    var target;
    var classname = "{{className}}";
+   var classUsername = "{{classUsername}}";
    var userid = "{{user.id}}";
-   var autofocus = false;
-   var scrollPos = 0;
+   var username = "{{user.username}}";
+   //var scrollPos = 0;
    var htmlEntities = [
       [/&amp;/g, "&"],
       [/&lt;/g, "<"],
@@ -98,7 +106,7 @@
    ];
    
    window.onload = prepare;
-
+   
    function prepare() {
       highlightSC();
       loadComments();
@@ -121,17 +129,30 @@
          focusNode = seltxt.focusNode;
          focusOffset = seltxt.focusNode.data.length;
          target = e.target;
-         
-         scrollPos = window.scrollY;
-         scSocket.send(JSON.stringify({
-            'todoType': "autofocus",
-            'scrollPos': scrollPos,
-         }));
       }
    });
-   
-   document.getElementById("auto-focus-value").addEventListener('click', function(e){
-      autofocus = document.getElementById("auto-focus-value").checked;
+
+   document.getElementById("speaker").addEventListener('click', function(e){
+      if (username != classUsername){
+         if (document.getElementById("speaker").checked == true){
+            document.getElementById("speaker").checked = false;
+            scSocket.send(JSON.stringify({
+               'todoType': "speakerRequest",
+               'fromU': username,
+               'toU': classUsername,
+            }));
+            alert("Speaker request sent to the class owner.");
+         }
+      }
+   });
+
+   window.addEventListener('scroll', function(e){
+      if (document.getElementById("speaker").checked == true){
+         scSocket.send(JSON.stringify({
+            'todoType': "autofocus",
+            'scrollPos': window.scrollY,
+         }));
+      }
    });
    
    // CREATE COMMENT
@@ -292,9 +313,41 @@
             newMessage.createIncomingMessage();
          }
       } else if (todoType == "autofocus"){
-         scrollPos = Number(data['scrollPos']);
-         if (autofocus == true){
-            window.scrollTo(0, scrollPos);
+         if (document.getElementById("auto-focus-value").checked == true){
+            window.scrollTo(0, Number(data['scrollPos']));
+         }
+      } else if (todoType == "speakerRequest"){
+         var fromU = data['fromU'];
+         var toU = data['toU'];
+         
+         if (toU == username){
+            var allowSpeakerRequest = confirm(`${fromU} has sent a speaker request.\nDo you allow to change the speaker to ${fromU}?`);
+            scSocket.send(JSON.stringify({
+               'todoType': "speakerRequestResponse",
+               'ownerU': toU,
+               'requestU': fromU,
+               'response': allowSpeakerRequest,
+            }));
+            if (allowSpeakerRequest == true){
+               document.getElementById("speaker").checked = false;
+               var autofocus = confirm("Do you want to turn on the auto focus function?");
+               if (autofocus == true)
+                  document.getElementById("auto-focus-value").checked = true;
+            }
+         }
+      } else if (todoType == "speakerRequestResponse"){
+         var ownerU = data['ownerU'];
+         var requestU = data['requestU'];
+         var requestResponse = data['response'];
+         
+         if (requestU == username){
+            if (requestResponse == true){
+               document.getElementById("speaker").checked = true;
+               alert(`${ownerU} has accepted your speaker request.\n You are the current speaker.`);
+               document.getElementById("auto-focus-value").checked = false;
+            } else {
+               alert(`${ownerU} has declined your speaker request.`);
+            }
          }
       }
    }
