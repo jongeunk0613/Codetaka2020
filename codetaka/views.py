@@ -10,7 +10,7 @@ from json import dumps
 import json
 
 from .forms import SignUpForm, SCUploadForm
-from .models import Class, SourceCode, Comment, Message
+from .models import Class, Folder, SourceCode, Comment, Message
 
 # DEFAULT PAGE
 def index(request):
@@ -79,6 +79,7 @@ def openClass(request, className):
       'form': SCUploadForm(),
       'sclist': SourceCode.objects.all(),
       'className': className,
+      'folderlist': Folder.objects.all().filter(ofClass = Class.objects.get(name=className)),
    }
    if request.method == 'POST':
       form = SCUploadForm(request.POST, request.FILES)
@@ -89,7 +90,19 @@ def openClass(request, className):
          return render(request, 'result.html', {'text': 'fail'})
    form = SCUploadForm()
    sclist = SourceCode.objects.all()
+   #ENTER NAME
+   
    return render(request, 'mainpage.html', context)
+
+def addFolder(request):
+   if request.method == "GET":
+      inClass = Class.objects.get(name = request.GET['classname'])
+      newFolder = Folder(ofClass=inClass, name=request.GET['foldername'], timestamp=timezone.now())
+      newFolder.save()
+      return HttpResponse(newFolder.id)
+      
+   else:
+      return HttpResponse('NOT A GET REQUEST')
 
 # OPEN SOURCE CODE
 @login_required
@@ -99,6 +112,12 @@ def openSC(request, className, sc_id):
    sc_content = sc.content.read()
    sc.content.close()
    
+   code = SourceCode.objects.get(pk=sc_id)
+   scName = sc.content.name.split('/')[-1]
+
+   code.name=scName
+   code.save()
+
    commentlist = serializers.serialize("json", Comment.objects.all().filter(scId=sc_id))
    if (len(Comment.objects.all()) > 0):
       nextID = Comment.objects.last().pk + 1
@@ -106,6 +125,9 @@ def openSC(request, className, sc_id):
       nextID = -1
    
    messagelist = serializers.serialize("json", Message.objects.all().filter(sc=sc))
+
+   folderlist = Folder.objects.all().filter(ofClass = Class.objects.get(name=className))
+   
    
    context = {
       'user': request.user,
@@ -118,6 +140,7 @@ def openSC(request, className, sc_id):
       'nextId': nextID,
       'commentlist': commentlist,
       'messagelist': messagelist,
+      'folderlist': folderlist,
    }
    return render(request, 'mainpage.html', context)
 

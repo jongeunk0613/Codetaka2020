@@ -14,6 +14,12 @@ class SourceCode(models.Model):
    def __str__(self):
       return self.content.name
 
+class Folder(models.Model):
+   ofFolder = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
+   ofClass = models.ForeignKey(Class, on_delete=models.CASCADE)
+   name = models.CharField(max_length=254)
+   timestamp = models.DateField(auto_now_add=True)
+   
 class Comment(models.Model):
    user = models.ForeignKey(User, on_delete=models.CASCADE)
    scId = models.ForeignKey(SourceCode, on_delete=models.CASCADE)

@@ -593,3 +593,12 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
+#folderBtn {
+   font-size : 40px;
+   color: #0F4C81;
+}
+
+#folderIcon {
+   font-size : 20px;
+   color: #0F4C81;
+}

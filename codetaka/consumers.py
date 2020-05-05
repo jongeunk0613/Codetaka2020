@@ -6,7 +6,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
 
 
-from .models import Class, Comment, Message
+from .models import Class, Folder, Comment, Message
 
 User = get_user_model()
 
@@ -57,6 +57,50 @@ class ClassConsumer(WebsocketConsumer):
       
       # Send message to WebSocket
       self.send(text_data = json.dumps({'className': className, 'userName': userName, 'timestamp': json.dumps(timestamp, cls=DjangoJSONEncoder)}))
+
+class FolderConsumer(WebsocketConsumer):
+   def connect(self):
+      self.folderName = self.scope['url_route']['kwargs']['folderName']
+      self.folderGroupName = 'folder_%s' % self.folderName
+
+      async_to_sync(self.channel_layer.group_add)(
+         self.folderGroupName,
+         self.channel_name
+      )
+
+      self.accept()
+
+   def disconnect(self, close_code):
+      async_to_sync(self.channel_layer.group_discard)(
+         self.folderGroupName,
+         self.channel_name
+      )
+
+   def receive(self, text_data):
+      data = json.loads(text_data)
+      classId = data['classId']
+      folderId = data['folderId']
+
+      newFolder = Folder.objects.get(pk=folderId)
+
+      async_to_sync(self.channel_layer.group_send)(
+         self.folderGroupName,
+         {
+            'type': 'folderCreated',
+            'ofClassName': newFolder.ofClass.name,
+            'folderName': newFolder.name,
+            'timestamp': json.dumps(newFolder.timestamp, cls=DjangoJSONEncoder)
+         }
+      )
+
+   def folderCreated(self, event):
+      ofClassName = event['ofClassName']
+      folderName = event['folderName']
+      timestamp = event['timestamp']
+
+      self.send(text_data = json.dumps({'ofClassName': ofClassName, 'folderName': folderName, 'timestamp': json.dumps(timestamp, cls=DjangoJSONEncoder)}))
+
+
 
 class scConsumer(WebsocketConsumer):
    def connect(self):
