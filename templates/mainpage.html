@@ -129,6 +129,17 @@
          focusNode = seltxt.focusNode;
          focusOffset = seltxt.focusNode.data.length;
          target = e.target;
+         
+         var anchorNumber = Number(anchorNode.parentNode.id.substring(2));
+         var focusNumber = Number(focusNode.parentNode.id.substring(2));
+         var temp;
+         if (focusNumber < anchorNumber){
+            temp = anchorNode;
+            anchorNode = focusNode;
+            focusNode = temp;
+         }
+         window.getSelection().removeAllRanges();
+         window.getSelection().setBaseAndExtent(anchorNode, 0, focusNode, focusNode.data.length);
       }
    });
 
@@ -154,6 +165,18 @@
          }));
       }
    });
+
+   document.onselectionchange = function() {
+      let {anchorNode, anchorOffset, focusNode, focusOffset} = document.getSelection();
+      if (document.getElementById("speaker").checked == true){
+         //document.getElementById("try").value = document.getElementById("try").value + anchorNode.parentNode.id + "  |  " + focusNode.parentNode.id + "\n";
+         scSocket.send(JSON.stringify({
+            'todoType': "autofocusSelection",
+            'anchorNodeID': anchorNode.parentNode.id,
+            'focusNodeID': focusNode.parentNode.id,
+         }));
+      }
+   }
    
    // CREATE COMMENT
    document.getElementById("menuBtnCreateComment").addEventListener('click', function(e){
@@ -172,17 +195,10 @@
             newComment.id = id;
             id = id;
             newComment.seltxt = seltxt.toString();
-            if (anchorNumber < focusNumber){
-               newComment.anchorNodeID = anchorNode.parentNode.id;
-               newComment.anchorOffset = anchorOffset;
-               newComment.focusNodeID = focusNode.parentNode.id;
-               newComment.focusOffset = focusOffset;
-            } else {
-               newComment.anchorNodeID = focusNode.parentNode.id;
-               newComment.anchorOffset = focusOffset;
-               newComment.focusNodeID = anchorNode.parentNode.id;
-               newComment.focusOffset = anchorOffset;
-            }
+            newComment.anchorNodeID = anchorNode.parentNode.id;
+            newComment.anchorOffset = anchorOffset;
+            newComment.focusNodeID = focusNode.parentNode.id;
+            newComment.focusOffset = focusOffset;
             newComment.posX = x;
             newComment.posY = y;
             
@@ -348,6 +364,17 @@
             } else {
                alert(`${ownerU} has declined your speaker request.`);
             }
+         }
+      } else if (todoType == "autofocusSelection"){
+         var anchorNodeID = data['anchorNodeID'];
+         var focusNodeID = data['focusNodeID'];
+         
+         if (document.getElementById("auto-focus-value").checked == true){
+            //document.getElementById("try").value = document.getElementById("try").value + anchorNodeID + "  |  " + focusNodeID + "\n";
+            var start = document.getElementById(anchorNodeID);
+            var end = document.getElementById(focusNodeID);
+            window.getSelection().removeAllRanges();
+            window.getSelection().setBaseAndExtent(start, 0, end, 1);
          }
       }
    }

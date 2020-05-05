@@ -194,6 +194,18 @@ class scConsumer(WebsocketConsumer):
             'response': response,
             }
          )
+      elif (todoType == "autofocusSelection") is True:
+         anchorNodeID = data['anchorNodeID']
+         focusNodeID = data['focusNodeID']
+         
+         async_to_sync(self.channel_layer.group_send)(
+            self.sc_group_name, {
+            'type': 'autofocusSelection',
+            'todoType': "autofocusSelection",
+            'anchorNodeID': anchorNodeID,
+            'focusNodeID': focusNodeID,
+            }
+         )
       
    # Receive message from room group
    def commentCreated(self, event):
@@ -280,4 +292,14 @@ class scConsumer(WebsocketConsumer):
          'ownerU': event['ownerU'],
          'requestU': event['requestU'],
          'response': event['response'],
+                                     }))
+                                     
+   # Receive message from room group
+   def autofocusSelection(self, event):
+      
+      # Send message to WebSocket
+      self.send(text_data=json.dumps({
+         'todoType': "autofocusSelection",
+         'anchorNodeID': event['anchorNodeID'],
+         'focusNodeID': event['focusNodeID'],
                                      }))
