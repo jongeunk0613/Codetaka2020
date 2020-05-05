@@ -112,12 +112,17 @@ def openSC(request, className, sc_id):
    sc_content = sc.content.read()
    sc.content.close()
    
+<<<<<<< HEAD
    code = SourceCode.objects.get(pk=sc_id)
    scName = sc.content.name.split('/')[-1]
 
    code.name=scName
    code.save()
 
+=======
+   classUsername = Class.objects.get(name=className).user.username
+   
+>>>>>>> c6e242ae97961cc02ee9aa56ab6ea7c6aeced465
    commentlist = serializers.serialize("json", Comment.objects.all().filter(scId=sc_id))
    if (len(Comment.objects.all()) > 0):
       nextID = Comment.objects.last().pk + 1
@@ -135,6 +140,7 @@ def openSC(request, className, sc_id):
       'sclist': SourceCode.objects.all(),
       'className': className,
       'sc': sc,
+      'classUsername': classUsername,
       'js_fcontent': dumps(sc_content),
       'range' : range(1, len(sc_content.split("\n"))+1),
       'nextId': nextID,

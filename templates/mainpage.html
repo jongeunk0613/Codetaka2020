@@ -48,6 +48,13 @@
          </label>
          <div id="divider1" class="vl"></div>
          <button id="menuBtnCreateComment"><i class = "fas fa-comment-alt"></i></button>
+         <div id="divider2" class="vl"></div>
+         <label id="menuBtnSpeaker">
+            <input id="speaker" type="checkbox">
+            <label id="speakerIcon" class="fas fa-microphone-alt"></label>
+         </label>
+         <!--<button id="menuBtnSpeaker"><i class = "fas fa-microphone-alt"></i></button>-->
+         <div id="divider3" class="vl"></div>
       </div>
       <div id="secCode">
          <div id="showContent">
@@ -103,9 +110,10 @@
    var {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection();
    var target;
    var classname = "{{className}}";
+   var classUsername = "{{classUsername}}";
    var userid = "{{user.id}}";
-   var autofocus = false;
-   var scrollPos = 0;
+   var username = "{{user.username}}";
+   //var scrollPos = 0;
    var htmlEntities = [
       [/&amp;/g, "&"],
       [/&lt;/g, "<"],
@@ -115,7 +123,7 @@
    ];
    
    window.onload = prepare;
-
+   
    function prepare() {
       highlightSC();
       loadComments();
@@ -140,17 +148,53 @@
          focusOffset = seltxt.focusNode.data.length;
          target = e.target;
          
-         scrollPos = window.scrollY;
+         var anchorNumber = Number(anchorNode.parentNode.id.substring(2));
+         var focusNumber = Number(focusNode.parentNode.id.substring(2));
+         var temp;
+         if (focusNumber < anchorNumber){
+            temp = anchorNode;
+            anchorNode = focusNode;
+            focusNode = temp;
+         }
+         window.getSelection().removeAllRanges();
+         window.getSelection().setBaseAndExtent(anchorNode, 0, focusNode, focusNode.data.length);
+      }
+   });
+
+   document.getElementById("speaker").addEventListener('click', function(e){
+      if (username != classUsername){
+         if (document.getElementById("speaker").checked == true){
+            document.getElementById("speaker").checked = false;
+            scSocket.send(JSON.stringify({
+               'todoType': "speakerRequest",
+               'fromU': username,
+               'toU': classUsername,
+            }));
+            alert("Speaker request sent to the class owner.");
+         }
+      }
+   });
+
+   window.addEventListener('scroll', function(e){
+      if (document.getElementById("speaker").checked == true){
          scSocket.send(JSON.stringify({
             'todoType': "autofocus",
-            'scrollPos': scrollPos,
+            'scrollPos': window.scrollY,
          }));
       }
    });
-   
-   document.getElementById("auto-focus-value").addEventListener('click', function(e){
-      autofocus = document.getElementById("auto-focus-value").checked;
-   });
+
+   document.onselectionchange = function() {
+      let {anchorNode, anchorOffset, focusNode, focusOffset} = document.getSelection();
+      if (document.getElementById("speaker").checked == true){
+         //document.getElementById("try").value = document.getElementById("try").value + anchorNode.parentNode.id + "  |  " + focusNode.parentNode.id + "\n";
+         scSocket.send(JSON.stringify({
+            'todoType': "autofocusSelection",
+            'anchorNodeID': anchorNode.parentNode.id,
+            'focusNodeID': focusNode.parentNode.id,
+         }));
+      }
+   }
    
    // CREATE COMMENT
    document.getElementById("menuBtnCreateComment").addEventListener('click', function(e){
@@ -169,17 +213,10 @@
             newComment.id = id;
             id = id;
             newComment.seltxt = seltxt.toString();
-            if (anchorNumber < focusNumber){
-               newComment.anchorNodeID = anchorNode.parentNode.id;
-               newComment.anchorOffset = anchorOffset;
-               newComment.focusNodeID = focusNode.parentNode.id;
-               newComment.focusOffset = focusOffset;
-            } else {
-               newComment.anchorNodeID = focusNode.parentNode.id;
-               newComment.anchorOffset = focusOffset;
-               newComment.focusNodeID = anchorNode.parentNode.id;
-               newComment.focusOffset = anchorOffset;
-            }
+            newComment.anchorNodeID = anchorNode.parentNode.id;
+            newComment.anchorOffset = anchorOffset;
+            newComment.focusNodeID = focusNode.parentNode.id;
+            newComment.focusOffset = focusOffset;
             newComment.posX = x;
             newComment.posY = y;
             
@@ -310,9 +347,52 @@
             newMessage.createIncomingMessage();
          }
       } else if (todoType == "autofocus"){
-         scrollPos = Number(data['scrollPos']);
-         if (autofocus == true){
-            window.scrollTo(0, scrollPos);
+         if (document.getElementById("auto-focus-value").checked == true){
+            window.scrollTo(0, Number(data['scrollPos']));
+         }
+      } else if (todoType == "speakerRequest"){
+         var fromU = data['fromU'];
+         var toU = data['toU'];
+         
+         if (toU == username){
+            var allowSpeakerRequest = confirm(`${fromU} has sent a speaker request.\nDo you allow to change the speaker to ${fromU}?`);
+            scSocket.send(JSON.stringify({
+               'todoType': "speakerRequestResponse",
+               'ownerU': toU,
+               'requestU': fromU,
+               'response': allowSpeakerRequest,
+            }));
+            if (allowSpeakerRequest == true){
+               document.getElementById("speaker").checked = false;
+               var autofocus = confirm("Do you want to turn on the auto focus function?");
+               if (autofocus == true)
+                  document.getElementById("auto-focus-value").checked = true;
+            }
+         }
+      } else if (todoType == "speakerRequestResponse"){
+         var ownerU = data['ownerU'];
+         var requestU = data['requestU'];
+         var requestResponse = data['response'];
+         
+         if (requestU == username){
+            if (requestResponse == true){
+               document.getElementById("speaker").checked = true;
+               alert(`${ownerU} has accepted your speaker request.\n You are the current speaker.`);
+               document.getElementById("auto-focus-value").checked = false;
+            } else {
+               alert(`${ownerU} has declined your speaker request.`);
+            }
+         }
+      } else if (todoType == "autofocusSelection"){
+         var anchorNodeID = data['anchorNodeID'];
+         var focusNodeID = data['focusNodeID'];
+         
+         if (document.getElementById("auto-focus-value").checked == true){
+            //document.getElementById("try").value = document.getElementById("try").value + anchorNodeID + "  |  " + focusNodeID + "\n";
+            var start = document.getElementById(anchorNodeID);
+            var end = document.getElementById(focusNodeID);
+            window.getSelection().removeAllRanges();
+            window.getSelection().setBaseAndExtent(start, 0, end, 1);
          }
       }
    }
