@@ -85,10 +85,18 @@ def openClass(request, className):
    if request.method == 'POST':
       form = SCUploadForm(request.POST, request.FILES)
       if form.is_valid():
-         form.save()
-         return render(request, 'result.html', {'text': 'success'})
-      else:
-         return render(request, 'result.html', {'text': 'fail'})
+         form.save();
+         sc = SourceCode.objects.last();
+         scname = sc.content.name.split('/')[-1];
+         sctype = scname.split('.')[-1];
+         scname = scname.split('_')[0:-1];
+         scname = "_".join(scname);
+         sc.name = scname + "." + sctype;
+         sc.save();
+     #    return render(request, 'trying.html', {'text': 'success'})
+     # else:
+     #    return render(request, 'result.html', {'text': 'fail'})
+         return redirect('openSC', className=className, sc_id=sc.id)
    form = SCUploadForm()
    sclist = SourceCode.objects.all()
    return render(request, 'mainpage.html', context)

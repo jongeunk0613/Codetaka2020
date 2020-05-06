@@ -14,21 +14,28 @@
    <div id="mainScreen">
       
       <div id="secDir">
+         <p id="fileList">File List</p>
          <div id="upload">
+             <label id="createFolder"><i class="material-icons">create_new_folder</i></label>
              <form method="post" enctype="multipart/form-data">
                   {% csrf_token %}
-                  <!--{{form.content}}-->
-                  <input type="file" name="content"></input>
-                  <div id="submit">
-                     <button id="uploadSubmit" type="submit">Upload</button>
-                  </div>
+                  <label id="uploadFileLabel" for="uploadingFile"><i class="material-icons">file_upload</i></label>
+                  <input id="uploadFile" type="file" name="content" onchange="this.form.submit()"> </input>
             </form>
          </div>
          
          <div id="dirTree">
             {% if sclist %}
-               {% for sc in sclist %}
-               <a href="{% url 'openSC' className sc.id %}">{{sc.content.name}}</a><br>
+               {% for SC in sclist %}
+                  {% if SC == sc %}
+                     <div class="sc">
+                     <i class="fa fa-file-code-o fileIcon"></i><a href="{% url 'openSC' className SC.id %}" class="currentSC">{{SC.name}}</a><br>
+                     </div>
+                  {% else %}
+                     <div class="sc">
+                     <i class="fa fa-file-code-o fileIcon"></i><a href="{% url 'openSC' className SC.id %}" >{{SC.name}}</a><br>
+                     </div>
+                  {% endif%}
                {% endfor %}
             {% endif %}
          </div>
@@ -123,6 +130,7 @@
       loadMessages();
    }
 
+   // GET ELEMENT WINDOW POSITION WHEN MOUSEDOWN
    document.getElementById("code").addEventListener('mousedown', function(e){
       x = e.target.closest('.line').offsetLeft + e.target.closest('.line').offsetWidth;
       y = e.target.offsetTop;
@@ -131,6 +139,7 @@
       //Y.value = y;
    });
 
+   // CREATE MENTION WHEN MOUSE UP + SAVE SOME INFO
    document.getElementById("code").addEventListener('mouseup', function(e){
       if (window.getSelection().toString().length > 0 && e.target.closest("#code").id == "code"){
          seltxt = window.getSelection();
@@ -155,6 +164,7 @@
       }
    });
 
+   // CHANGE OR REQUEST SPEAKER
    document.getElementById("speaker").addEventListener('click', function(e){
       if (username != classUsername){
          if (document.getElementById("speaker").checked == true){
@@ -169,6 +179,7 @@
       }
    });
 
+   // WHEN SCROLLED
    window.addEventListener('scroll', function(e){
       if (document.getElementById("speaker").checked == true){
          scSocket.send(JSON.stringify({
@@ -178,6 +189,7 @@
       }
    });
 
+   // SELECTION BY TOKEN
    document.onselectionchange = function() {
       let {anchorNode, anchorOffset, focusNode, focusOffset} = document.getSelection();
       if (document.getElementById("speaker").checked == true){
@@ -189,6 +201,7 @@
       }
    }
 
+   // SEND MESSAGE OR MENTION
    document.getElementById("chatSubmit").addEventListener('click', function(e){
       if (creatingMention == true){
          saveMention(mseltxt, manchorNodeID, anchorOffset, mfocusNodeID, focusOffset);

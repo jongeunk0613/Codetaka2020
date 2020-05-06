@@ -251,10 +251,51 @@
    top: 56px;
    height: 100%;
    width: 20%;
+   background-color: #c5d2d9;
+   padding: 5px 10px 10px 10px;
    
    word-break: break-all;
 
-   border: 1px solid #ddd;
+   border-right: 1px solid #ddd;
+}
+
+#fileList{
+   font-size: 20px;
+   font-weight: bold;
+   font-family: Helvetica;
+}
+
+#upload{
+}
+
+#createFolder{
+   position: absolute;
+   top: 5px;
+   right: 35px;
+   cursor: pointer;
+   font-size: 0px;
+}
+
+#createFolder i {
+   font-size: 24px;
+   color: #0F4C81;
+}
+
+#uploadFileLabel{
+   position: absolute;
+   top: 5px;
+   right: 5px;
+   cursor: pointer;
+   font-size: 0px;
+}
+
+#uploadFileLabel i{
+   font-size: 24px;
+   color: #0F4C81;
+}
+
+#uploadFile{
+   display: none;
 }
 
 #dirTree{
@@ -264,6 +305,41 @@
    height: 80.5%;
 }
 
+.fileIcon{
+   color: #1e68a8;
+   margin-right: 10px;
+}
+
+.sc {
+   font-family: Helvetica;
+   font-size: 15px;
+}
+
+.sc:hover {
+   background-color: #e0e0e0;
+}
+
+.sc a:link{
+   color: black;
+}
+
+.sc a:visited{
+   color: black;
+}
+
+.sc a:hover{
+   color: black;
+   text-decoration: none;
+}
+
+.sc a:active{
+   color: black;
+}
+
+.currentSC{
+   font-weight: bold;
+}
+
 /*-----CODE SECTION-----*/
 /*-----CODE MENU-----*/
 #codeMenu{
@@ -271,7 +347,6 @@
    border-color: green;*/
    background-color: white;
    border-bottom: 1px solid #ddd;
-   border-right: 1px solid #ddd;
    
    position: fixed;
    top: 56px;
