@@ -473,22 +473,28 @@ thead tr{
    height: 100%;
    width: 80%;
    font-size: 13px;
-   color: #1e68a8;
+   color: #ff6c4f;
+   overflow-x: scroll;
+   overflow-y: scroll;
 }
 
 .warnings{
    padding-top: 0.8%;
    padding-left: 1%;
    height: 100%;
-   width: 100%;
+   width: 80%;
    font-size: 13px;
    color: #ff6c4f;
+   overflow-x: scroll;
+   overflow-y: scroll;
 }
 
 #choose{
    height: 100%;
-   width: 75%;
+   width: 80%;
    display: flex;
+   overflow-x: scroll;
+   overflow-y: scroll;
 }
 
 .chooseText{
@@ -497,7 +503,7 @@ thead tr{
    margin-right: 1%;
    height: 100%;
    font-size: 13px;
-   color: #1e68a8;
+   color: #ff6c4f;
 }
 
 .chooseBtn{
@@ -518,8 +524,10 @@ thead tr{
    padding: 10px 10px 10px 10px;
    
    height: 100%;
-   width: 60%;
+   width: 59.9%;
    z-index: 2;
+   
+   overflow-x: scroll;
    
    /*border: 1px solid #ddd;
    border-color: green;*/
@@ -852,6 +860,18 @@ pre {
    padding-top: 10px;
 }
 
+.incoming_mention_index_info{
+   border-radius: 3px;
+   font-size: 10px;
+   margin: 0;
+   padding: 0px px 0px 12px;
+   width: 100%;
+   vertical-align: top;
+   word-break: normal;
+   word-wrap: break-word;
+   
+}
+
 .incoming_mention_code{
    background: #f2f2f2 none repeat scroll 0 0;
    border-radius: 3px;
@@ -890,7 +910,7 @@ pre {
 .outgoing_mention_box{
    background: #1e68a8 none repeat scroll 0 0;
    border-radius: 3px;
-   padding-top: 10px;
+   padding-top: 5px;
 }
 
 .outgoing_mention_code{
@@ -907,11 +927,24 @@ pre {
    /*white-space: pre-wrap;*/
 }
 
+.outgoing_mention_index_info{
+   border-radius: 3px;
+   font-size: 10px;
+   margin: 0;
+   padding: 0px 10px 0px 0px;
+   width: 100%;
+   text-align: right;
+   vertical-align: top;
+   word-break: normal;
+   word-wrap: break-word;
+   color: white;
+}
+
 .outgoing_mention_text{
    border-radius: 3px;
    font-size: 14px;
    margin: 0;
-   padding: 5px 10px 5px 12px;
+   padding: 0px 10px 5px 12px;
    width: 100%;
    text-align: right;
    word-break: normal;

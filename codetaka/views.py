@@ -119,36 +119,48 @@ def addFolder(request):
 # OPEN SOURCE CODE
 @login_required
 def openSC(request, className, sc_id):
+   if request.method == 'POST':
+      form = SCUploadForm(request.POST, request.FILES)
+      if form.is_valid():
+         form.save();
+         sc = SourceCode.objects.last();
+         scname = sc.content.name.split('/')[-1];
+         sctype = scname.split('.')[-1];
+         scname = scname.split('_')[0:-1];
+         scname = "_".join(scname);
+         sc.name = scname + "." + sctype;
+         
+         ofClass = Class.objects.get(name=className)
+         sc.ofClass = ofClass
+         sc.save();
+
    sc = get_object_or_404(SourceCode, pk=sc_id)
    sc.content.open(mode="r")
    sc_content = sc.content.read()
    sc.content.close()
-   
-   classUsername = Class.objects.get(name=className).user.username
    
    commentlist = serializers.serialize("json", Comment.objects.all().filter(scId=sc_id))
    if (len(Comment.objects.all()) > 0):
       nextID = Comment.objects.last().pk + 1
    else:
       nextID = -1
-   
-   messagelist = serializers.serialize("json", Message.objects.all().filter(sc=sc))
-   
-   folderlist = Folder.objects.all().filter(ofClass = Class.objects.get(name=className))
-   
+      
+   chatHistory = []
+   chatHistory.extend(Message.objects.all().filter(sc=sc))
+      
    context = {
       'user': request.user,
       'form': SCUploadForm(),
       'sclist': SourceCode.objects.filter(ofClass=Class.objects.get(name=className)),
       'className': className,
       'sc': sc,
-      'classUsername': classUsername,
+      'classUsername': Class.objects.get(name=className).user.username,
       'js_fcontent': dumps(sc_content),
       'range' : range(1, len(sc_content.split("\n"))+1),
       'nextId': nextID,
       'commentlist': commentlist,
-      'messagelist': messagelist,
-      'folderlist': folderlist,
+      'messagelist': serializers.serialize("json", Message.objects.all().filter(sc=sc)),
+      'folderlist': Folder.objects.all().filter(ofClass = Class.objects.get(name=className)),
    }
    return render(request, 'mainpage.html', context)
 
@@ -167,7 +179,7 @@ def getLatestCommentId(request):
 def saveComment(request):
    if request.method == "GET":
       scId = SourceCode.objects.only('id').get(id = request.GET['scId'])
-      comment = Comment.objects.create(user = request.user, scId = scId, seltxt=request.GET['seltxt'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],posX=request.GET['posX'],posY=request.GET['posY'],text=request.GET['text'], timestamp = timezone.now(), lastEdited = timezone.now())
+      comment = Comment.objects.create(user = request.user, scId = scId, seltxt=request.GET['seltxt'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],posX=request.GET['posX'],posY=request.GET['posY'],text=request.GET['text'], timestamp = timezone.now(), lastEdited = timezone.now(), type = "Comment")
       comment.save()
       return HttpResponse(comment.id)
    else:
@@ -206,7 +218,7 @@ def sendMessage(request):
       sc = SourceCode.objects.only('id').get(id = request.GET['scId'])
       user = request.user
       ofClass = Class.objects.get(name=request.GET['classname'])
-      message = Message.objects.create(user = user, sc = sc, ofClass = ofClass, content = request.GET['messageContent'], timestamp = timezone.now())
+      message = Message.objects.create(user = user, sc = sc, ofClass = ofClass, content = request.GET['messageContent'], timestamp = timezone.now(), type="Message")
       message.save()
       return HttpResponse(message.id)
    return HttpResponse("NOT A GET")
@@ -216,7 +228,7 @@ def sendMessage(request):
 def saveMention(request):
    if request.method == "GET":
       scId = SourceCode.objects.only('id').get(id = request.GET['scId'])
-      mention = Mention.objects.create(user = request.user, scId = scId, seltxt=request.GET['seltxt'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],text=request.GET['text'], timestamp = timezone.now())
+      mention = Mention.objects.create(user = request.user, scId = scId, seltxt=request.GET['seltxt'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],text=request.GET['text'], timestamp = timezone.now(), type="Mention")
       mention.save()
       return HttpResponse(mention.id)
    else:

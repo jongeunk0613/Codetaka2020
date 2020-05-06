@@ -138,7 +138,6 @@
       highlightSC();
       loadComments();
       loadMessages();
-      loadSC();
    }
 
    // GET ELEMENT WINDOW POSITION WHEN MOUSEDOWN
@@ -155,9 +154,9 @@
       if (window.getSelection().toString().length > 0 && e.target.closest("#code").id == "code"){
          seltxt = window.getSelection();
          anchorNode = seltxt.anchorNode;
-         anchorOffset = 0;
+         anchorOffset = anchorNode.parentNode.getAttribute('data-startIndex');
          focusNode = seltxt.focusNode;
-         focusOffset = seltxt.focusNode.data.length;
+         focusOffset = seltxt.focusNode.data.length + Number(focusNode.parentNode.getAttribute('data-startIndex'));
          target = e.target;
          
          var anchorNumber = Number(anchorNode.parentNode.id.substring(2));
@@ -172,6 +171,8 @@
          window.getSelection().setBaseAndExtent(anchorNode, 0, focusNode, focusNode.data.length);
          
          createMention();
+         
+         //alert("ANCHOR: " + anchorOffset + "\n" + "FOCUS: " + focusNode.parentNode.getAttribute('data-startIndex') + "+" + seltxt.focusNode.data.length + "=" + focusOffset);
       }
    });
 
@@ -228,9 +229,6 @@
       if (seltxt.toString().length > 0 && target.closest("#code").id == "code"){
          
          if (creatingComment == false){
-            //document.designMode = "on";
-            //document.execCommand("HiliteColor", false, "yellow");
-            //document.designMode = "off";
             
             var anchorNumber = Number(anchorNode.parentNode.id.substring(2));
             var focusNumber = Number(focusNode.parentNode.id.substring(2));
@@ -1110,6 +1108,10 @@
          var divMentionBox = document.createElement("div");
          divMentionBox.className = "incoming_mention_box";
          divReceivedMention.appendChild(divMentionBox);
+         var indexInfo = document.createElement("p");
+         indexInfo.className = "incoming_mention_index_info";
+         indexInfo.innerHTML = "L" + anchorNode.parentNode.getAttribute('data-lineNumber') + ":" + anchorOffset + " - " + "L" + focusNode.parentNode.getAttribute('data-lineNumber') + ":" + focusOffset;
+         divMentionBox.appendChild(indexInfo);
          var mentionCode = document.createElement("p");
          mentionCode.className = "incoming_mention_code";
          mentionCode.innerHTML = hljs.highlightAuto(seltxt).value;
@@ -1145,6 +1147,10 @@
          var divMentionBox = document.createElement("div");
          divMentionBox.className = "outgoing_mention_box";
          divSentMention.appendChild(divMentionBox);
+         var indexInfo = document.createElement("p");
+         indexInfo.className = "outgoing_mention_index_info";
+         indexInfo.innerHTML = "L" + anchorNode.parentNode.getAttribute('data-lineNumber') + ":" + anchorOffset + " - " + "L" + focusNode.parentNode.getAttribute('data-lineNumber') + ":" + focusOffset;
+         divMentionBox.appendChild(indexInfo);
          var mentionCode = document.createElement("p");
          mentionCode.className = "outgoing_mention_code";
          mentionCode.innerHTML = hljs.highlightAuto(seltxt).value;
@@ -1300,14 +1306,6 @@
       }));
    }
 
-   // FOLDER
-   function loadSC(){
-      scName = {{sc.content.name}};
-      scName = scName.split('/')[-1];
-      alert(scName);
-      document.getElementById("openSC").innerHTML = scName;
-   }
-
    var folderNode = document.getElementById("dirTree");
 
      const folderSocket = new WebSocket('ws://' + window.location.host + "/ws/folder/" + "{{user}}" + '/');
@@ -1333,7 +1331,25 @@
      //ADD FOLDER
      function addFolderText(){
 
-        folderNode.innerHTML += "<input id='folder_name' type='text' ><button id='btnFolderCreate' onclick='addFolder()'>+<br>";
+        if (document.getElementById("addfolder") != null){
+           document.getElementById("addfolder").remove();
+        }
+        
+        var addfolder = document.createElement("div");
+        addfolder.id = "addfolder";
+        var folderInput = document.createElement("input");
+        folderInput.id = "folder_name";
+        folderInput.type = "text";
+        addfolder.appendChild(folderInput);
+        var folderButton = document.createElement("button");
+        folderButton.id = "btnFolderCreate";
+        folderButton.addEventListener('click', function(event){
+           addFolder();
+        });
+        folderButton.innerHTML = "+";
+        addfolder.appendChild(folderButton);
+        document.getElementById("dirTree").appendChild(addfolder);
+        //folderNode.innerHTML += "<input id='folder_name' type='text' ><button id='btnFolderCreate' onclick='addFolder()'>+<br>";
      }
      function addFolder(){
         $.ajax({
@@ -1345,8 +1361,7 @@
            },
            success: function (response){
               //alert("SUCCESS\n" + response);
-              folderNode.removeChild(document.getElementById("folder_name"));
-              folderNode.removeChild(document.getElementById("btnFolderCreate"));
+              document.getElementById("addfolder").remove();
 
               folderSocket.send(JSON.stringify({
                  'classId': "{{class.id}}",
