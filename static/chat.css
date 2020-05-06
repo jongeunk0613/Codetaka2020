@@ -74,7 +74,7 @@ img{ max-width:100%;}
  .received_withd_msg p {
   background: #8abfed none repeat scroll 0 0;
   border-radius: 3px;
-  font-size: 14px;
+  font-size: 11px;
   margin: 0;
   padding: 5px 10px 5px 8px;
   width: 100%;
@@ -108,7 +108,7 @@ img{ max-width:100%;}
  .sent_msg p {
   background: #1e68a8 none repeat scroll 0 0;
   border-radius: 3px;
-  font-size: 14px;
+  font-size: 11px;
   margin: 0; color:#fff;
   padding: 5px 10px 5px 10px;  
   width:100%;

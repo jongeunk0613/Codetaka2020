@@ -288,7 +288,7 @@ thead tr{
 }
 
 #fileList{
-   font-size: 20px;
+   font-size: 18px;
    font-weight: bold;
    font-family: Helvetica;
 }
@@ -298,27 +298,27 @@ thead tr{
 
 #createFolder{
    position: absolute;
-   top: 5px;
-   right: 35px;
+   top: 8px;
+   right: 25px;
    cursor: pointer;
    font-size: 0px;
 }
 
 #createFolder i {
-   font-size: 24px;
+   font-size: 20px;
    color: #0F4C81;
 }
 
 #uploadFileLabel{
    position: absolute;
-   top: 5px;
-   right: 5px;
+   top: 8px;
+   right: 3px;
    cursor: pointer;
    font-size: 0px;
 }
 
 #uploadFileLabel i{
-   font-size: 24px;
+   font-size: 20px;
    color: #0F4C81;
 }
 
@@ -335,22 +335,22 @@ thead tr{
 
 .fileIcon{
    color: #1e68a8;
-   margin-right: 13px;
+   margin-right: 9px;
 }
 
 .folderIcon {
-   margin-right: 10px;
+   margin-right: 6px;
    color: #1e68a8;
 }
 
 .sc {
    font-family: Helvetica;
-   font-size: 15px;
+   font-size: 12px;
 }
 
 .folder{
    font-family: Helvetica;
-   font-size: 15px;
+   font-size: 12px;
 }
 
 .sc:hover {
@@ -536,7 +536,7 @@ thead tr{
 #showLineNum{
    position:relative;
    /*overflow-y: scroll;*/
-   font-size: 13px;
+   font-size: 10px;
    z-index: -1;
    float:left;
    color: grey;
@@ -554,7 +554,7 @@ thead tr{
    width: 100%;
    left: 6%;
    white-space: pre;
-   font-size: 13px;
+   font-size: 10px;
    font-family: monospace;
 }
 
@@ -600,7 +600,7 @@ pre {
    width: 74%;
    height: 80%;
    
-   font-size: 13px;
+   font-size: 11px;
    outline: none;
    
    border: none;
@@ -650,7 +650,7 @@ pre {
 }
 
 .mention_content{
-   font-size: 12px;
+   font-size: 11px;
    overflow-y: scroll;
    width: 100%;
    height: 100%;
@@ -865,6 +865,7 @@ pre {
    font-size: 10px;
    margin: 0;
    padding: 0px px 0px 12px;
+   padding-left: 8px;
    width: 100%;
    vertical-align: top;
    word-break: normal;
@@ -875,7 +876,7 @@ pre {
 .incoming_mention_code{
    background: #f2f2f2 none repeat scroll 0 0;
    border-radius: 3px;
-   font-size: 12px;
+   font-size: 11px;
    margin: auto;
    padding: 5px 10px 5px 12px;
    width: 90%;
@@ -888,7 +889,7 @@ pre {
 
 .incoming_mention_text{
    border-radius: 3px;
-   font-size: 14px;
+   font-size: 11px;
    margin: 0;
    padding: 5px 10px 5px 12px;
    width: 100%;
@@ -916,7 +917,7 @@ pre {
 .outgoing_mention_code{
    background: #f2f2f2 none repeat scroll 0 0;
    border-radius: 3px;
-   font-size: 12px;
+   font-size: 11px;
    margin: auto;
    padding: 5px 10px 5px 12px;
    width: 90%;
@@ -942,7 +943,7 @@ pre {
 
 .outgoing_mention_text{
    border-radius: 3px;
-   font-size: 14px;
+   font-size: 11px;
    margin: 0;
    padding: 0px 10px 5px 12px;
    width: 100%;
