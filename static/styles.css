@@ -225,6 +225,34 @@
    min-height: 50%;
 }
 
+thead tr{
+   background-color: #d3e2eb;
+}
+
+.classRow{
+   cursor: pointer;
+}
+
+.classRow:hover{
+   background-color: #f0f4f7;
+}
+
+.class:link{
+   color: black;
+}
+
+.class:visited{
+   color: black;
+}
+
+.class:hover{
+   color: black;
+   text-decoration: none;
+}
+
+.class:active{
+   color: black;
+}
 
 /*-----MAINPAGE.HTML-----*/
 #mainScreen{
@@ -251,7 +279,7 @@
    top: 56px;
    height: 100%;
    width: 20%;
-   background-color: #c5d2d9;
+   background-color: #d3e2eb;
    padding: 5px 10px 10px 10px;
    
    word-break: break-all;
@@ -307,7 +335,12 @@
 
 .fileIcon{
    color: #1e68a8;
+   margin-right: 13px;
+}
+
+.folderIcon {
    margin-right: 10px;
+   color: #1e68a8;
 }
 
 .sc {
@@ -315,8 +348,13 @@
    font-size: 15px;
 }
 
+.folder{
+   font-family: Helvetica;
+   font-size: 15px;
+}
+
 .sc:hover {
-   background-color: #e0e0e0;
+   background-color: #bdd1de;
 }
 
 .sc a:link{
@@ -880,3 +918,5 @@ pre {
    word-wrap: break-word;
    color: white;
 }
+
+

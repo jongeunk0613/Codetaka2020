@@ -6,7 +6,15 @@ class Class(models.Model):
    name = models.CharField(max_length=254)
    timestamp = models.DateTimeField()
 
+class Folder(models.Model):
+   ofFolder = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
+   ofClass = models.ForeignKey(Class, on_delete=models.CASCADE)
+   name = models.CharField(max_length=254)
+   timestamp = models.DateField(auto_now_add=True)
+
 class SourceCode(models.Model):
+   ofFolder = models.ForeignKey(Folder, on_delete=models.CASCADE, blank=True, null=True)
+   ofClass = models.ForeignKey(Class, on_delete=models.CASCADE, blank=True, null=True)
    name = models.CharField(max_length=200, blank=True)
    content = models.FileField(upload_to='sourceCodes/')
    upload_time = models.DateTimeField(auto_now_add=True)

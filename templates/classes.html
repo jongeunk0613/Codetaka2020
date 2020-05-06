@@ -24,11 +24,11 @@
          </thead>
          <tbody>
             {% for class in classList %}
-               <tr>
+               <tr class="classRow">
                  <td id="class{{forloop.counter}}" scope="row">{{forloop.counter}}</td>
-                 <td><a href="{% url 'openClass' class.name %}">{{class.name}}</a></td>
+                 <td><a id="gotoClass{{forloop.counter}}" class="class" href="{% url 'openClass' class.name %}">{{class.name}}</a></td>
                  <td>{{class.user}}</td>
-                 <td>{{class.timestamp}}</td>
+                 <td>{{class.timestamp|date:'F d, Y'}}</td>
                </tr>
             {% endfor %}
          </tbody>
@@ -50,6 +50,7 @@
       var data = JSON.parse(e.data);
       
       var newRow = table.insertRow(-1);
+      newRow.className = "classRow";
       var numberCell = newRow.insertCell(0);
       var nameCell = newRow.insertCell(1);
       var userCell = newRow.insertCell(2);

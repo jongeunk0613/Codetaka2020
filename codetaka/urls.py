@@ -11,6 +11,7 @@ urlpatterns = [
     path('signOut/', views.signOut, name='signOut'),
     path('classList/', views.classList, name='classList'),
     path('addClass/', views.addClass, name='addClass'),
+    path('addFolder/', views.addFolder, name='addFolder'),
     path('class/<str:className>/', views.openClass, name='openClass'),
     path('class/<str:className>/<int:sc_id>/', views.openSC, name='openSC'),
     path('getLatestCommentId/', views.getLatestCommentId, name='getLatestCommentId'),

@@ -12,7 +12,7 @@ from json import dumps
 import json
 
 from .forms import SignUpForm, SCUploadForm
-from .models import Class, SourceCode, Comment, Message, Mention
+from .models import Class, SourceCode, Comment, Message, Mention, Folder
 
 # DEFAULT PAGE
 def index(request):
@@ -79,8 +79,9 @@ def openClass(request, className):
    context = {
       'user': request.user,
       'form': SCUploadForm(),
-      'sclist': SourceCode.objects.all(),
+      'sclist': SourceCode.objects.filter(ofClass=Class.objects.get(name=className)),
       'className': className,
+      'folderlist': Folder.objects.all().filter(ofClass = Class.objects.get(name=className)),
    }
    if request.method == 'POST':
       form = SCUploadForm(request.POST, request.FILES)
@@ -92,6 +93,9 @@ def openClass(request, className):
          scname = scname.split('_')[0:-1];
          scname = "_".join(scname);
          sc.name = scname + "." + sctype;
+         
+         ofClass = Class.objects.get(name=className)
+         sc.ofClass = ofClass
          sc.save();
      #    return render(request, 'trying.html', {'text': 'success'})
      # else:
@@ -100,6 +104,17 @@ def openClass(request, className):
    form = SCUploadForm()
    sclist = SourceCode.objects.all()
    return render(request, 'mainpage.html', context)
+
+# ADD FOLDER
+def addFolder(request):
+   if request.method == "GET":
+      inClass = Class.objects.get(name = request.GET['classname'])
+      newFolder = Folder(ofClass=inClass, name=request.GET['foldername'], timestamp=timezone.now())
+      newFolder.save()
+      return HttpResponse(newFolder.id)
+
+   else:
+      return HttpResponse('NOT A GET REQUEST')
 
 # OPEN SOURCE CODE
 @login_required
@@ -119,10 +134,12 @@ def openSC(request, className, sc_id):
    
    messagelist = serializers.serialize("json", Message.objects.all().filter(sc=sc))
    
+   folderlist = Folder.objects.all().filter(ofClass = Class.objects.get(name=className))
+   
    context = {
       'user': request.user,
       'form': SCUploadForm(),
-      'sclist': SourceCode.objects.all(),
+      'sclist': SourceCode.objects.filter(ofClass=Class.objects.get(name=className)),
       'className': className,
       'sc': sc,
       'classUsername': classUsername,
@@ -131,6 +148,7 @@ def openSC(request, className, sc_id):
       'nextId': nextID,
       'commentlist': commentlist,
       'messagelist': messagelist,
+      'folderlist': folderlist,
    }
    return render(request, 'mainpage.html', context)
 

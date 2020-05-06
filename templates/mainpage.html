@@ -16,7 +16,7 @@
       <div id="secDir">
          <p id="fileList">File List</p>
          <div id="upload">
-             <label id="createFolder"><i class="material-icons">create_new_folder</i></label>
+             <label id="createFolder" onclick="addFolderText()"><i class="material-icons">create_new_folder</i></label>
              <form method="post" enctype="multipart/form-data">
                   {% csrf_token %}
                   <label id="uploadFileLabel" for="uploadFile"><i class="material-icons">file_upload</i></label>
@@ -37,17 +37,26 @@
                      </div>
                   {% endif%}
                {% endfor %}
+               {% for folder in folderlist %}
+                     <div class="folder">
+                     <i class="fas fa-folder folderIcon"></i>{{folder.name}}
+                     </div>
+               {% endfor %}
             {% endif %}
          </div>
+         
+         <!--{% for folder in folderlist %}
+         <i class="fas fa-folder" id="folderIcon"></i>{{folder.name}}<br>
+            {% if sclist %}
+               {% for sc in sclist %}
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="openSC" href="{% url 'openSC' className sc.id %}">{{sc.name}}</a><br>
+               {% endfor %}
+            {% endif %}
+         {%endfor%}-->
          
       </div>
       
       <div id="codeMenu">
-         <!--<div id="choose">
-            <p class="chooseText">CHOOSE ONE OF THESE?</p>
-            <input id="chooseYes" type="button" class="chooseBtn" value="Yes"></input>
-            <input id="chooseNo" type="button" class="chooseBtn" value="No"></input>
-         </div>-->
          <label id="auto-focus" class="switch">
             <label id="auto-focus-label"> Auto Focus</label>
            <input id="auto-focus-value" type="checkbox">
@@ -105,6 +114,7 @@
    var lastMentionId = 0;
    var id = {{nextId}};
    var scId = {{sc.id}};
+   var scName;
    var seltxt = window.getSelection();
    var mseltxt = "", manchorNodeID="", mfocusNodeID="";
    var {anchorNode, anchorOffset, focusNode, focusOffset} = window.getSelection();
@@ -128,6 +138,7 @@
       highlightSC();
       loadComments();
       loadMessages();
+      loadSC();
    }
 
    // GET ELEMENT WINDOW POSITION WHEN MOUSEDOWN
@@ -1288,6 +1299,68 @@
          'response': false,
       }));
    }
+
+   // FOLDER
+   function loadSC(){
+      scName = {{sc.content.name}};
+      scName = scName.split('/')[-1];
+      alert(scName);
+      document.getElementById("openSC").innerHTML = scName;
+   }
+
+   var folderNode = document.getElementById("dirTree");
+
+     const folderSocket = new WebSocket('ws://' + window.location.host + "/ws/folder/" + "{{user}}" + '/');
+
+     folderSocket.onmessage = function(e){
+        var data = JSON.parse(e.data);
+        
+        var folder = document.createElement("div");
+        folder.className = "folder";
+        var icon = document.createElement("i");
+        icon.className = "fas fa-folder folderIcon";
+        folder.appendChild(icon);
+        var a = document.createElement("a");
+        a.innerHTML = data['folderName'];
+        folder.appendChild(a);
+        document.getElementById("dirTree").appendChild(folder);
+     };
+
+     folderSocket.onclose = function(e){
+        //alert("SOCKET CLOSED");
+     };
+
+     //ADD FOLDER
+     function addFolderText(){
+
+        folderNode.innerHTML += "<input id='folder_name' type='text' ><button id='btnFolderCreate' onclick='addFolder()'>+<br>";
+     }
+     function addFolder(){
+        $.ajax({
+           url: "{% url 'addFolder' %}",
+           type: "GET",
+           data:{
+              classname: "{{className}}",
+              foldername: $("#folder_name").val()
+           },
+           success: function (response){
+              //alert("SUCCESS\n" + response);
+              folderNode.removeChild(document.getElementById("folder_name"));
+              folderNode.removeChild(document.getElementById("btnFolderCreate"));
+
+              folderSocket.send(JSON.stringify({
+                 'classId': "{{class.id}}",
+                 'folderId': response,
+              }));
+
+           },
+           error: function (response){
+              alert("ERROR\n" + response);
+           }
+
+        });
+
+     }
    
    
 </script>
