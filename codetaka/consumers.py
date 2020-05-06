@@ -6,7 +6,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
 
 
-from .models import Class, Comment, Message
+from .models import Class, Comment, Message, Mention
 
 User = get_user_model()
 
@@ -206,6 +206,28 @@ class scConsumer(WebsocketConsumer):
             'focusNodeID': focusNodeID,
             }
          )
+      elif (todoType == "mentionCreated") is True:
+         mId = data['mId']
+         
+         mention = Mention.objects.get(pk=mId)
+         
+         #Send message to room group
+         async_to_sync(self.channel_layer.group_send)(
+            self.sc_group_name, {
+            'type': 'mentionCreated',
+            'todoType': "mentionCreated",
+            'userid': mention.user.id,
+            'username': mention.user.username,
+            'mId': mention.pk,
+            'seltxt': mention.seltxt,
+            'anchorNodeID': mention.anchorNodeID,
+            'anchorOffset': mention.anchorOffset,
+            'focusNodeID': mention.focusNodeID,
+            'focusOffset': mention.focusOffset,
+            'text': mention.text,
+            'timestamp': json.dumps(mention.timestamp, cls=DjangoJSONEncoder),
+            }
+         )
       
    # Receive message from room group
    def commentCreated(self, event):
@@ -302,4 +324,22 @@ class scConsumer(WebsocketConsumer):
          'todoType': "autofocusSelection",
          'anchorNodeID': event['anchorNodeID'],
          'focusNodeID': event['focusNodeID'],
+                                     }))
+                                     
+   # Receive message from room group
+   def mentionCreated(self, event):
+      
+      # Send message to WebSocket
+      self.send(text_data=json.dumps({
+         'todoType': "mentionCreated",
+         'userid': event['userid'],
+         'username': event['username'],
+         'mId': event['mId'],
+         'seltxt': event['seltxt'],
+         'anchorNodeID': event['anchorNodeID'],
+         'anchorOffset': event['anchorOffset'],
+         'focusNodeID': event['focusNodeID'],
+         'focusOffset': event['focusOffset'],
+         'text': event['text'],
+         'timestamp': json.dumps(event['timestamp'], cls=DjangoJSONEncoder),
                                      }))

@@ -31,10 +31,20 @@ class Comment(models.Model):
    def __str__(self):
       return "[" + str(self.id) + "]: " + self.text
 
-
 class Message(models.Model):
    user = models.ForeignKey(User, on_delete=models.CASCADE)
    sc = models.ForeignKey(SourceCode, on_delete=models.CASCADE)
    ofClass = models.ForeignKey(Class, on_delete=models.CASCADE)
    content = models.TextField()
+   timestamp = models.DateTimeField()
+
+class Mention(models.Model):
+   user = models.ForeignKey(User, on_delete=models.CASCADE)
+   scId = models.ForeignKey(SourceCode, on_delete=models.CASCADE)
+   seltxt = models.TextField()
+   anchorNodeID = models.CharField(max_length=255)
+   anchorOffset = models.PositiveIntegerField(default = 0)
+   focusNodeID = models.CharField(max_length=255)
+   focusOffset = models.PositiveIntegerField(default = 0)
+   text = models.TextField()
    timestamp = models.DateTimeField()

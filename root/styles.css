@@ -14,7 +14,11 @@
 }
 
 #navbar {
+   position: fixed;
+   top: 0;
+   width: 100%;
    background-color: #0F4C81;
+   z-index: 3;
 }
 
 /*-----SIGN IN-----*/
@@ -59,6 +63,15 @@
    border-bottom: 1px solid grey;
 }
 
+#signinError{
+   position: absolute;
+   top: 15%;
+   right: 5%;
+   
+   font-size: 10px;
+   color: red;
+}
+
 /*-----SIGN UP-----*/
 
 #signup{
@@ -92,7 +105,7 @@
 
 #btnSignup:hover{
    background-color: #3a709e;
-   box-shadow: 2px 2px 5px 0px rgba(189,185,189,1)
+   box-shadow: 2px 2px 5px 0px rgba(189,185,189,1);
 }
 
 #singup_haveAccount{
@@ -163,10 +176,53 @@
 }
 
 /*-----CLASS LIST-----*/
+#classCreate{
+   position: absolute;
+   left: 10%;
+   top: 15%;
+   
+   width: 80%;
+   height: 6%;
+}
+
+#classCreate label{
+   position: absolute;
+   right: 28%;
+}
+
+#classCreateName{
+   position: absolute;
+   right: 6.5%;
+   font-size: 15px;
+   width: 20%;
+}
+
+#btnClassCreate{
+   position: absolute;
+   right: 0%;
+   
+   background-color: #0F4C81;
+   color: white;
+   border-radius: 5px;
+}
+
+#btnClassCreate:hover{
+   background-color: #3a709e;
+   /*box-shadow: 2px 2px 5px 0px rgba(189,185,189,1);*/
+}
+
 #classList{
-   border: 1px solid #ddd;
+   position: absolute;
+   left: 10%;
+   top: 21%;
+   
    width: 80%;
    height: 70%;
+   border: 1px solid #ddd;
+   
+   display: flex;
+   flex-direction: column;
+   min-height: 50%;
 }
 
 
@@ -179,8 +235,8 @@
    height: 100%;
    width: 100%;
 
-   border: 1px solid #ddd;
-   border-color: yellow;
+   /*border: 1px solid #ddd;*/
+   /*border-color: yellow;*/
 }
 
 #user{
@@ -191,37 +247,561 @@
 
 /*-----DIRECTORY SECTION-----*/
 #secDir{
+   position: fixed;
+   top: 56px;
    height: 100%;
    width: 20%;
    
    word-break: break-all;
 
    border: 1px solid #ddd;
-   border-color: blue;
+}
+
+#dirTree{
+   /*border: 1px solid #ddd;
+   border-color: blue;*/
+   overflow-y: scroll;
+   height: 80.5%;
 }
 
 /*-----CODE SECTION-----*/
+/*-----CODE MENU-----*/
+#codeMenu{
+   /*border: 1px solid #ddd;
+   border-color: green;*/
+   background-color: white;
+   border-bottom: 1px solid #ddd;
+   border-right: 1px solid #ddd;
+   
+   position: fixed;
+   top: 56px;
+   left: 20%;
+   
+   width: calc(60% - 3px);
+   height: 35px;
+   
+   z-index: 3;
+}
+
+#menuBtnCreateComment{
+   position: absolute;
+   right: 3px;
+   top: 3px;
+   background-color: transparent;
+   font-size: 20px;
+   border: none;
+   color: #1e68a8;
+}
+
+.vl{
+   border-left: 1px solid #ddd;
+   height: 25px;
+}
+
+#divider1{
+   position: absolute;
+   right: 40px;
+   top: 5px;
+}
+
+#auto-focus{
+   position: absolute;
+   right: 48px;
+   top: 8px;
+}
+#auto-focus-label{
+   position: absolute;
+   right: 50px;
+   font-size: 10px;
+   top: -5px;
+   text-align: center;
+}
+
+#divider2{
+   position: absolute;
+   right: 135px;
+   top: 5px;
+}
+
+#menuBtnSpeaker{
+   position: absolute;
+   right: 145px;
+   top: 7px;
+}
+
+#speakerIcon{
+   background-color: transparent;
+   font-size: 20px;
+   border: none;
+   color: #ccc;
+}
+
+#speaker:checked + label{
+   color: #1e68a8;
+}
+
+#speaker{
+   position: absolute;
+   opacity: 0;
+   cursor: pointer;
+   width: 20px;
+   height: 23px;
+}
+
+#divider3{
+   position: absolute;
+   right: 135px;
+   top: 5px;
+}
+
+.notifications{
+   padding-top: 0.8%;
+   padding-left: 1%;
+   height: 100%;
+   width: 80%;
+   font-size: 13px;
+   color: #1e68a8;
+}
+
+.warnings{
+   padding-top: 0.8%;
+   padding-left: 1%;
+   height: 100%;
+   width: 100%;
+   font-size: 13px;
+   color: #ff6c4f;
+}
+
+#choose{
+   height: 100%;
+   width: 75%;
+   display: flex;
+}
+
+.chooseText{
+   padding-top: 1%;
+   padding-left: 1%;
+   margin-right: 1%;
+   height: 100%;
+   font-size: 13px;
+   color: #1e68a8;
+}
+
+.chooseBtn{
+   background-color: #8abfed;
+   margin-top: 0.7%;
+   margin-right: 1%;
+   height: 70%;
+   border: none;
+   font-size: 12px;
+   border-radius: 5px;
+   padding: auto;
+}
+/*-----CODE BODY-----*/
 #secCode{
+   margin-top: 85px;
+   position: absolute;
+   left: 20%;
    padding: 10px 10px 10px 10px;
    
    height: 100%;
    width: 60%;
    z-index: 2;
    
-   border: 1px solid #ddd;
-   border-color: green;
+   /*border: 1px solid #ddd;
+   border-color: green;*/
+}
+
+#showLineNum{
+   position:relative;
+   /*overflow-y: scroll;*/
+   font-size: 13px;
+   z-index: -1;
+   float:left;
+   color: grey;
+}
+
+#showContent{
+   position: relative;
+   /*overflow-y: scroll;*/
+   height: 100%;
+   /*overflow-x: scroll;*/
+}
+
+#code{
+   position: absolute;
+   width: 100%;
+   left: 6%;
+   white-space: pre;
+   font-size: 13px;
+   font-family: monospace;
+}
+
+pre {
+   tab-size: 16;
 }
 
 /*-----CHAT SECTION-----*/
 #secChat{
-   height: 100%;
-   width: 25%;
+   position: fixed;
+   right: 0px;
+   top: 56px;
    
-   overflow-y: scroll;
+   height: 100%;
+   width: 20.2%;
+   
    border: 1px solid #ddd;
-   border-color: red;
    
-   overflow-y: scroll;
+   /*overflow-y: scroll;*/
    height: 100%;
+}
+
+#chatLog{
+   width: 100%;
+   height: 84%;
+   /*height: 75%;*/
+   top: 0px;
+}
+
+#chatBottom{
+   border-top: 1px solid #ddd;
+   position: absolute;
+   bottom: 7%;
+   width: 100%;
+   height: 9.0%;
+}
+
+#chatInput{
+   position: absolute;
+   bottom: 10%;
+   left: 2%;
    
+   width: 74%;
+   height: 80%;
+   
+   font-size: 13px;
+   outline: none;
+   
+   border: none;
+}
+
+#chatSubmit{
+   position: absolute;
+   bottom: 10%;
+   left: 78%;
+   width: 20%;
+   height: 80%;
+   background-color: #1e68a8;
+   color: white;
+   border-radius: 5px;
+}
+
+#secMention{
+   border-top: 1px solid #ddd;
+   position: absolute;
+   top: 75%;
+   height: 9%;
+   width: 100%;
+   display: none;
+   /*display: block;*/
+}
+
+.mentionCancelBtn{
+   position: absolute;
+   top: 0%;
+   right: 3%;
+   z-index: 1;
+   background: transparent;
+   width: 20px;
+   height: 30px;
+   padding: 0px;
+   border: none;
+}
+
+.mention_background{
+   position: absolute;
+   top: 7.5%;
+   right: 2.5%;
+   width: 95%;
+   height: 85%;
+   background-color: #ededed;
+   padding: 5px;
+}
+
+.mention_content{
+   font-size: 12px;
+   overflow-y: scroll;
+   width: 100%;
+   height: 100%;
+   white-space: pre;
+}
+
+/*-----COMMENTS-----*/
+.commentIcon{
+   position: relative;
+   border-radius: 5px;
+   height: 20px;
+   width: 20px;
+   background-color: #0F4C81;
+}
+
+.commentIcon.invisible{
+   opacity: 0;
+}
+
+.commentIcon:hover{
+   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.open{
+   border-radius: 0px;
+   height: 150px;
+   width: 200px;
+   background-color: #4c8dc7;
+   z-index: 2;
+}
+
+.commentForm{
+   visibility: hidden;
+   padding: 10px 10px 10px 10px;
+}
+
+.commentContent{
+   background-color: white;
+   width: 180px;
+   height: 150px;
+   font-size: 13px;
+   overflow-y: scroll;
+   height: 100px;
+}
+
+.commentCancelBtn{
+   position: absolute;
+   color: white;
+   bottom: 5%;
+   left: 5%;
+   width: 25%;
+   height: 15%;
+   background-color: #4c8dc7;
+   border: 1px solid white;
+   font-size: 7px;
+   text-align: center;
+   border-radius: 5px;
+}
+
+.commentCancelBtn:hover{
+   background-color: #0F4C81;
+}
+
+.commentSaveBtn{
+   position: absolute;
+   right: 5%;
+   bottom: 5%;
+   height: 15%;
+   color: white;
+   width: 25%;
+   background-color: #4c8dc7;
+   border: 1px solid white;
+   font-size: 7px;
+   text-align: center;
+   border-radius: 5px;
+}
+
+.commentSaveBtn:hover{
+   background-color: #0F4C81;
+}
+
+.commentMinimizeBtn{
+   position: absolute;
+   right: 10px;
+   background-color: #4c8dc7;
+}
+
+.minimize{
+}
+
+
+/*TRY*/
+#try{
+   position: absolute;
+   white-space: pre;
+   top: 10%;
+   left: 5%;
+   width: 40%;
+   height: 85%;
+   border: 1px solid red;
+}
+
+#trycontent{
+   position: absolute;
+   top: 10%;
+   width: 40%;
+   left: 50%;
+   height: 85%;
+   border: 1px solid blue;
+}
+
+#haha{
+   display: flex;
+   flex-direction: row;
+   justify-content: center;
+}
+
+#test{
+   position: absolute;
+   top: 10%;
+   width: 40%;
+   left: 50%;
+   height: 85%;
+   border: 1px solid blue;
+}
+
+/*-----TOOGLE SWITCH-----*/
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.switch input:checked + .slider {
+  background-color: #1e68a8;
+}
+
+.switch input:focus + .slider {
+  box-shadow: 0 0 1px #1e68a8;
+}
+
+.switch input:checked + .slider:before {
+  -webkit-transform: translateX(20px);
+  -ms-transform: translateX(20px);
+  transform: translateX(20px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/*-----MENTION-----*/
+
+.incoming_mention{
+   display: inline-block;
+   padding: 0 0 0 8px;
+   vertical-align: top;
+   margin-bottom: 10px;
+   max-width: 98%;
+}
+
+.received_width_mention { max-width: 98%;}
+
+.incoming_mention_box{
+   background: #8abfed none repeat scroll 0 0;
+   border-radius: 3px;
+   width: 99%;
+   padding-top: 10px;
+}
+
+.incoming_mention_code{
+   background: #f2f2f2 none repeat scroll 0 0;
+   border-radius: 3px;
+   font-size: 12px;
+   margin: auto;
+   padding: 5px 10px 5px 12px;
+   width: 90%;
+   word-break: normal;
+   word-wrap: break-word;
+   white-space: pre;
+   overflow-x: scroll;
+   /*white-space: pre-wrap;*/
+}
+
+.incoming_mention_text{
+   border-radius: 3px;
+   font-size: 14px;
+   margin: 0;
+   padding: 5px 10px 5px 12px;
+   width: 100%;
+   word-break: normal;
+   word-wrap: break-word;
+}
+
+.outgoing_mention{
+   overflow:hidden;
+   margin-bottom: 10px;
+   max-width: 98;
+}
+
+.sent_mention {
+   max-width: 100%;
+   float: right;
+}
+
+.outgoing_mention_box{
+   background: #1e68a8 none repeat scroll 0 0;
+   border-radius: 3px;
+   padding-top: 10px;
+}
+
+.outgoing_mention_code{
+   background: #f2f2f2 none repeat scroll 0 0;
+   border-radius: 3px;
+   font-size: 12px;
+   margin: auto;
+   padding: 5px 10px 5px 12px;
+   width: 90%;
+   word-break: normal;
+   word-wrap: break-word;
+   white-space: pre;
+   overflow-x: scroll;
+   /*white-space: pre-wrap;*/
+}
+
+.outgoing_mention_text{
+   border-radius: 3px;
+   font-size: 14px;
+   margin: 0;
+   padding: 5px 10px 5px 12px;
+   width: 100%;
+   text-align: right;
+   word-break: normal;
+   word-wrap: break-word;
+   color: white;
 }

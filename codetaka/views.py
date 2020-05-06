@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
@@ -10,7 +12,7 @@ from json import dumps
 import json
 
 from .forms import SignUpForm, SCUploadForm
-from .models import Class, SourceCode, Comment, Message
+from .models import Class, SourceCode, Comment, Message, Mention
 
 # DEFAULT PAGE
 def index(request):
@@ -182,6 +184,18 @@ def sendMessage(request):
       message.save()
       return HttpResponse(message.id)
    return HttpResponse("NOT A GET")
+
+# SAVE MENTION
+@login_required
+def saveMention(request):
+   if request.method == "GET":
+      scId = SourceCode.objects.only('id').get(id = request.GET['scId'])
+      mention = Mention.objects.create(user = request.user, scId = scId, seltxt=request.GET['seltxt'],  anchorNodeID=request.GET['anchorNodeID'], anchorOffset=request.GET['anchorOffset'], focusNodeID=request.GET['focusNodeID'],focusOffset=request.GET['focusOffset'],text=request.GET['text'], timestamp = timezone.now())
+      mention.save()
+      return HttpResponse(mention.id)
+   else:
+      return HttpResponse('error')
+
 
 
 
