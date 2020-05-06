@@ -415,7 +415,7 @@
          var mfocusNodeID = data['focusNodeID'];
          var mfocusOffset = data['focusOffset'];
          var mtext = data['text'];
-         var mtimestamp = data['timestamp'];
+         var mtimestamp = data['timestamp'].substring(3, data['timestamp'].length-3);
                
          if (username == musername){
             var newMention = Object.create(Mention);
@@ -601,27 +601,65 @@
 
    // LOAD MESSAGES
    function loadMessages() {
-      var messagelist = {{messagelist|safe}};
+      var chat = {{chatHistory|safe}};
       
-      if (messagelist.length > 0){
-         for (var i = 0; i < messagelist.length; i++){
-            var muserid = messagelist[i]["fields"].user;
-            var mcontent = messagelist[i]["fields"].content;
-            var mtimestamp = messagelist[i]["fields"].timestamp;
-            
-            if (muserid == userid){
-               var newMessage = Object.create(Message);
-               newMessage.userid = muserid;
-               newMessage.content = mcontent;
-               newMessage.timestamp = mtimestamp;
-               newMessage.createOutgoingMessage();
+      //chat.sort((a,b) => (a.["fields"].timestamp > b.["fields"].timestamp) ? 1 : -1);
+      
+      if (chat.length > 0){
+         for (var i = 0; i < chat.length; i++){
+            if (chat[i]["fields"].type == "Message"){
+               var muserid = chat[i]["fields"].user;
+               var mcontent = chat[i]["fields"].content;
+               var mtimestamp = chat[i]["fields"].timestamp;
                
-            } else {
-               var newMessage = Object.create(Message);
-               newMessage.userid = muserid;
-               newMessage.content = mcontent;
-               newMessage.timestamp = mtimestamp;
-               newMessage.createIncomingMessage();
+               if (muserid == userid){
+                  var newMessage = Object.create(Message);
+                  newMessage.userid = muserid;
+                  newMessage.content = mcontent;
+                  newMessage.timestamp = mtimestamp;
+                  newMessage.createOutgoingMessage();
+                  
+               } else {
+                  var newMessage = Object.create(Message);
+                  newMessage.userid = muserid;
+                  newMessage.content = mcontent;
+                  newMessage.timestamp = mtimestamp;
+                  newMessage.createIncomingMessage();
+               }
+            } else if (chat[i]["fields"].type == "Mention"){
+               var muser = chat[i]["fields"].user;
+               var mid = chat[i]["pk"];
+               var mseltxt = chat[i]["fields"].seltxt;
+               var manchorNodeID = chat[i]["fields"].anchorNodeID;
+               var manchorOffset = chat[i]["fields"].anchorOffset;
+               var mfocusNodeID = chat[i]["fields"].focusNodeID;
+               var mfocusOffset = chat[i]["fields"].focusOffset;
+               var mtext = chat[i]["fields"].text;
+               var mtimestamp = chat[i]["fields"].timestamp;
+               
+               if (muserid == userid){
+                  var newMention = Object.create(Mention);
+                  newMention.id = mid;
+                  newMention.seltxt = mseltxt;
+                  newMention.text = mtext;
+                  newMention.timestamp = mtimestamp;
+                  newMention.anchorNodeID = manchorNodeID;
+                  newMention.anchorOffset = manchorOffset;
+                  newMention.focusNodeID = mfocusNodeID;
+                  newMention.focusOffset = mfocusOffset;
+                  newMention.outgoingMention();
+               } else {
+                  var newMention = Object.create(Mention);
+                  newMention.id = mid;
+                  newMention.seltxt = mseltxt;
+                  newMention.text = mtext;
+                  newMention.timestamp = mtimestamp;
+                  newMention.anchorNodeID = manchorNodeID;
+                  newMention.anchorOffset = manchorOffset;
+                  newMention.focusNodeID = mfocusNodeID;
+                  newMention.focusOffset = mfocusOffset;
+                  newMention.incomingMention();
+               }
             }
          }
       }
@@ -1110,7 +1148,7 @@
          divReceivedMention.appendChild(divMentionBox);
          var indexInfo = document.createElement("p");
          indexInfo.className = "incoming_mention_index_info";
-         indexInfo.innerHTML = "L" + anchorNode.parentNode.getAttribute('data-lineNumber') + ":" + anchorOffset + " - " + "L" + focusNode.parentNode.getAttribute('data-lineNumber') + ":" + focusOffset;
+         indexInfo.innerHTML = "L" + document.getElementById(this.anchorNodeID).getAttribute('data-lineNumber') + ":" + anchorOffset + " - " + "L" + document.getElementById(this.focusNodeID).getAttribute('data-lineNumber') + ":" + focusOffset;
          divMentionBox.appendChild(indexInfo);
          var mentionCode = document.createElement("p");
          mentionCode.className = "incoming_mention_code";
@@ -1149,7 +1187,7 @@
          divSentMention.appendChild(divMentionBox);
          var indexInfo = document.createElement("p");
          indexInfo.className = "outgoing_mention_index_info";
-         indexInfo.innerHTML = "L" + anchorNode.parentNode.getAttribute('data-lineNumber') + ":" + anchorOffset + " - " + "L" + focusNode.parentNode.getAttribute('data-lineNumber') + ":" + focusOffset;
+         indexInfo.innerHTML = "L" + document.getElementById(this.anchorNodeID).getAttribute('data-lineNumber') + ":" + anchorOffset + " - " + "L" + document.getElementById(this.focusNodeID).getAttribute('data-lineNumber') + ":" + focusOffset;
          divMentionBox.appendChild(indexInfo);
          var mentionCode = document.createElement("p");
          mentionCode.className = "outgoing_mention_code";

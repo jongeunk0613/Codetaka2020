@@ -90,8 +90,9 @@ def openClass(request, className):
          sc = SourceCode.objects.last();
          scname = sc.content.name.split('/')[-1];
          sctype = scname.split('.')[-1];
-         scname = scname.split('_')[0:-1];
-         scname = "_".join(scname);
+         if scname.count("_") > 0:
+            scname = scname.split('_')[0:-1];
+            scname = "_".join(scname);
          sc.name = scname + "." + sctype;
          
          ofClass = Class.objects.get(name=className)
@@ -147,6 +148,8 @@ def openSC(request, className, sc_id):
       
    chatHistory = []
    chatHistory.extend(Message.objects.all().filter(sc=sc))
+   chatHistory.extend(Mention.objects.all().filter(scId=sc))
+   #chatHistory.order_by('timestamp')
       
    context = {
       'user': request.user,
@@ -160,6 +163,7 @@ def openSC(request, className, sc_id):
       'nextId': nextID,
       'commentlist': commentlist,
       'messagelist': serializers.serialize("json", Message.objects.all().filter(sc=sc)),
+      'chatHistory': serializers.serialize("json", chatHistory),
       'folderlist': Folder.objects.all().filter(ofClass = Class.objects.get(name=className)),
    }
    return render(request, 'mainpage.html', context)
