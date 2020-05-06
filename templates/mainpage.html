@@ -19,7 +19,7 @@
              <label id="createFolder"><i class="material-icons">create_new_folder</i></label>
              <form method="post" enctype="multipart/form-data">
                   {% csrf_token %}
-                  <label id="uploadFileLabel" for="uploadingFile"><i class="material-icons">file_upload</i></label>
+                  <label id="uploadFileLabel" for="uploadFile"><i class="material-icons">file_upload</i></label>
                   <input id="uploadFile" type="file" name="content" onchange="this.form.submit()"> </input>
             </form>
          </div>
