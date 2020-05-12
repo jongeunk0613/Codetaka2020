@@ -86,18 +86,20 @@ def openClass(request, className):
    if request.method == 'POST':
       form = SCUploadForm(request.POST, request.FILES)
       if form.is_valid():
-         form.save();
-         sc = SourceCode.objects.last();
-         scname = sc.content.name.split('/')[-1];
-         sctype = scname.split('.')[-1];
+         form.save()
+         sc = SourceCode.objects.last()
+         scname = sc.content.name.split('/')[-1]
          if scname.count("_") > 0:
-            scname = scname.split('_')[0:-1];
-            scname = "_".join(scname);
-         sc.name = scname + "." + sctype;
+            sctype = scname.split('.')[-1]
+            scname = scname.split('_')[0:-1]
+            scname = "_".join(scname)
+            sc.name = scname + "." + sctype
+         else:
+            sc.name = scname
          
          ofClass = Class.objects.get(name=className)
          sc.ofClass = ofClass
-         sc.save();
+         sc.save()
      #    return render(request, 'trying.html', {'text': 'success'})
      # else:
      #    return render(request, 'result.html', {'text': 'fail'})
@@ -123,17 +125,20 @@ def openSC(request, className, sc_id):
    if request.method == 'POST':
       form = SCUploadForm(request.POST, request.FILES)
       if form.is_valid():
-         form.save();
-         sc = SourceCode.objects.last();
-         scname = sc.content.name.split('/')[-1];
-         sctype = scname.split('.')[-1];
-         scname = scname.split('_')[0:-1];
-         scname = "_".join(scname);
-         sc.name = scname + "." + sctype;
+         form.save()
+         sc = SourceCode.objects.last()
+         scname = sc.content.name.split('/')[-1]
+         if scname.count("_") > 0:
+            sctype = scname.split('.')[-1]
+            scname = scname.split('_')[0:-1]
+            scname = "_".join(scname)
+            sc.name = scname + "." + sctype
+         else:
+            sc.name = scname
          
          ofClass = Class.objects.get(name=className)
          sc.ofClass = ofClass
-         sc.save();
+         sc.save()
 
    sc = get_object_or_404(SourceCode, pk=sc_id)
    sc.content.open(mode="r")
@@ -238,7 +243,15 @@ def saveMention(request):
    else:
       return HttpResponse('error')
 
-
+# GET COMMENT IDS
+@login_required
+def getCommentIDs(request):
+   if request.method == "GET":
+      sc = SourceCode.objects.get(pk = request.GET['scId'])
+      commentlist = serializers.serialize("json", Comment.objects.all().filter(scId=sc))
+      return HttpResponse(commentlist)
+   else:
+      return HttpResponse('error')
 
 
 # TESTING

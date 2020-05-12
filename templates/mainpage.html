@@ -69,8 +69,13 @@
             <input id="speaker" type="checkbox">
             <label id="speakerIcon" class="fas fa-microphone-alt"></label>
          </label>
-         <!--<button id="menuBtnSpeaker"><i class = "fas fa-microphone-alt"></i></button>-->
          <div id="divider3" class="vl"></div>
+         <label id="menuBtnPlay">
+            <input id="play" type="checkbox">
+            <label id="playIcon" class="fa fa-play-circle"></label>
+         </label>
+         <!--<button id="menuBtnSpeaker"><i class = "fas fa-microphone-alt"></i></button>-->
+         <div id="divider4" class="vl"></div>
       </div>
       <div id="secCode">
          <div id="showContent">
@@ -111,6 +116,10 @@
    var y = 0;
    var creatingComment = false;
    var creatingMention = false;
+   var playComments = false;
+   var comments;
+   var currentComment = 0;
+   var maxComment = 0;
    var lastMentionId = 0;
    var id = {{nextId}};
    var scId = {{sc.id}};
@@ -186,7 +195,7 @@
                'fromU': username,
                'toU': classUsername,
             }));
-            showNotification("Speaker request sent to the class owner.", "notifications");
+            showNotification("Speaker request sent to the class owner.", "warnings");
          }
       }
    });
@@ -222,6 +231,101 @@
          sendMessage();
       }
    });
+
+   // PLAY COMMENTS
+   document.getElementById("play").addEventListener('click', function(e){
+      if (playComments == false){
+         playComments = true;
+         currentComment = 0;
+         maxComment = 0;
+         comments = [];
+         
+         $.ajax({
+            url: "{% url 'getCommentIDs' %}",
+            type: "GET",
+            data:{
+               scId: scId,
+            },
+            success: function (response){
+               //alert("SUCCESS\n" + response);
+               comments = JSON.parse(response);
+               maxComment = comments.length;
+               
+               window.scrollTo(0, comments[currentComment]["fields"].posY - 100);
+               var start = document.getElementById(comments[currentComment]["fields"].anchorNodeID);
+               var end = document.getElementById(comments[currentComment]["fields"].focusNodeID);
+               window.getSelection().setBaseAndExtent(start, 0, end, 1);
+               document.designMode = "on";
+               document.execCommand("HiliteColor", false, "#d5f3f7");
+               document.designMode = "off";
+               window.getSelection().removeAllRanges();
+               
+               document.getElementById(`comment${comments[currentComment]["pk"]}`).click();
+            },
+            error: function (response){
+               alert("ERROR\n" + response);
+            }
+
+         });
+      }else
+         playComments = false;
+         document.designMode = "on";
+         document.getElementById(`comment${comments[currentComment]["pk"]}`).click();
+         var start = document.getElementById(comments[currentComment]["fields"].anchorNodeID);
+         var end = document.getElementById(comments[currentComment]["fields"].focusNodeID);
+         window.getSelection().setBaseAndExtent(start, 0, end, 1);
+         document.execCommand("HiliteColor", false, "#fffead");
+         document.designMode = "off";
+         window.getSelection().removeAllRanges();
+   });
+   
+   // LISTEN TO KEYSTROKE TO PLAY NEXT OR PREVIOUS COMMENT
+   document.onkeydown = function(){
+      if (playComments == true){
+         switch (window.event.keyCode){
+            case 37:
+               var start = document.getElementById(comments[currentComment]["fields"].anchorNodeID);
+               var end = document.getElementById(comments[currentComment]["fields"].focusNodeID);
+               window.getSelection().setBaseAndExtent(start, 0, end, 1);
+               document.designMode = "on";
+               document.execCommand("HiliteColor", false, "#fffead");
+               window.getSelection().removeAllRanges();
+               document.getElementById(`comment${comments[currentComment]["pk"]}`).click();
+               currentComment -= 1;
+               if (currentComment == -1)
+                  currentComment = maxComment-1;
+               document.getElementById(`comment${comments[currentComment]["pk"]}`).click();
+               var start = document.getElementById(comments[currentComment]["fields"].anchorNodeID);
+               var end = document.getElementById(comments[currentComment]["fields"].focusNodeID);
+               window.getSelection().setBaseAndExtent(start, 0, end, 1);
+               document.execCommand("HiliteColor", false, "#d5f3f7");
+               document.designMode = "off";
+               window.getSelection().removeAllRanges();
+               window.scrollTo(0, comments[currentComment]["fields"].posY - 100);
+               break;
+            case 39:
+               var start = document.getElementById(comments[currentComment]["fields"].anchorNodeID);
+               var end = document.getElementById(comments[currentComment]["fields"].focusNodeID);
+               window.getSelection().setBaseAndExtent(start, 0, end, 1);
+               document.designMode = "on";
+               document.execCommand("HiliteColor", false, "#fffead");
+               window.getSelection().removeAllRanges();
+               document.getElementById(`comment${comments[currentComment]["pk"]}`).click();
+               currentComment += 1;
+               if (currentComment == maxComment)
+                  currentComment = 0;
+               document.getElementById(`comment${comments[currentComment]["pk"]}`).click();
+               var start = document.getElementById(comments[currentComment]["fields"].anchorNodeID);
+               var end = document.getElementById(comments[currentComment]["fields"].focusNodeID);
+               window.getSelection().setBaseAndExtent(start, 0, end, 1);
+               document.execCommand("HiliteColor", false, "#d5f3f7");
+               document.designMode = "off";
+               window.getSelection().removeAllRanges();
+               window.scrollTo(0, comments[currentComment]["fields"].posY - 100);
+               break;
+         }
+      }
+   };
    
    // CREATE COMMENT
    document.getElementById("menuBtnCreateComment").addEventListener('click', function(e){
@@ -379,7 +483,7 @@
          var toU = data['toU'];
          
          if (toU == username){
-            choose(`${fromU} has sent a speaker request. Do you allow to change the speaker to ${fromU}?`, function() {acceptSpeakerRequest(fromU, toU);}, function() {declineSpeakerRequest(fromU, toU);});
+            choose(`${fromU} has sent a speaker request. \nDo you accept?`, function() {acceptSpeakerRequest(fromU, toU);}, function() {declineSpeakerRequest(fromU, toU);});
          }
       } else if (todoType == "speakerRequestResponse"){
          var ownerU = data['ownerU'];
@@ -389,10 +493,10 @@
          if (requestU == username){
             if (requestResponse == true){
                document.getElementById("speaker").checked = true;
-               showNotification(`${ownerU} has accepted your speaker request.\n You are the current speaker.`, "notifications");
+               showNotification(`Request accepted.\nYou are the current speaker.`, "warnings");
                document.getElementById("auto-focus-value").checked = false;
             } else {
-               showNotification(`${ownerU} has declined your speaker request.`, "notifications");
+               showNotification(`${ownerU} has declined your speaker request.`, "warnings");
             }
          }
       } else if (todoType == "autofocusSelection"){
@@ -1323,7 +1427,7 @@
       }));
       
       document.getElementById("speaker").checked = false;
-      choose("Do you want to turn on the auto focus function?",
+      choose("Do you want to turn on\nthe auto focus function?",
       function(){
          document.getElementById("auto-focus-value").checked = true;
          document.getElementById("choose").remove();

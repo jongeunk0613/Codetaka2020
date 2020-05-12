@@ -20,6 +20,7 @@ urlpatterns = [
     path('saveEditedComment/', views.saveEditedComment, name='saveEditedComment'),
     path('sendMessage/', views.sendMessage, name='sendMessage'),
     path('saveMention/', views.saveMention, name='saveMention'),
+    path('getCommentIDs/', views.getCommentIDs, name='getCommentIDs'),
     
     path('trying/', views.trying, name='trying'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
