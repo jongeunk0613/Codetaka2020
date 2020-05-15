@@ -59,3 +59,10 @@ class Mention(models.Model):
    text = models.TextField()
    timestamp = models.DateTimeField()
    type = models.TextField()
+   
+class ConnectedUser(models.Model):
+   user = models.ForeignKey(User, on_delete=models.CASCADE)
+   userName = models.CharField(max_length=254)
+   sc = models.ForeignKey(SourceCode, on_delete=models.CASCADE)
+   connectedTime = models.DateTimeField()
+   disconnectedTime = models.DateTimeField()

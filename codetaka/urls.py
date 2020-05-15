@@ -21,6 +21,10 @@ urlpatterns = [
     path('sendMessage/', views.sendMessage, name='sendMessage'),
     path('saveMention/', views.saveMention, name='saveMention'),
     path('getCommentIDs/', views.getCommentIDs, name='getCommentIDs'),
+    path('userConnected/', views.userConnected, name='userConnected'),
+    path('userDisconnected/', views.userDisconnected, name='userDisconnected'),
+    path('getConnectedUsers/', views.getConnectedUsers, name='getConnectedUsers'),
+    path('getSpeakerUser/', views.getSpeakerUser, name='getSpeakerUser'),
     
     path('trying/', views.trying, name='trying'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

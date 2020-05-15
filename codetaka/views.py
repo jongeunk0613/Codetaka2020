@@ -8,11 +8,13 @@ from django.core.files.storage import FileSystemStorage
 from django.core import serializers
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
+from datetime import datetime
+from django.forms.models import model_to_dict
 from json import dumps
 import json
 
 from .forms import SignUpForm, SCUploadForm
-from .models import Class, SourceCode, Comment, Message, Mention, Folder
+from .models import Class, SourceCode, Comment, Message, Mention, Folder, ConnectedUser
 
 # DEFAULT PAGE
 def index(request):
@@ -119,6 +121,7 @@ def addFolder(request):
    else:
       return HttpResponse('NOT A GET REQUEST')
 
+# change to save source code, and divide the bottom part to open source code
 # OPEN SOURCE CODE
 @login_required
 def openSC(request, className, sc_id):
@@ -155,6 +158,8 @@ def openSC(request, className, sc_id):
    chatHistory.extend(Message.objects.all().filter(sc=sc))
    chatHistory.extend(Mention.objects.all().filter(scId=sc))
    #chatHistory.order_by('timestamp')
+   
+   print(ConnectedUser.objects.all().filter(sc=sc))
       
    context = {
       'user': request.user,
@@ -253,7 +258,60 @@ def getCommentIDs(request):
    else:
       return HttpResponse('error')
 
+# SAVE CONNECTED USER
+@login_required
+def userConnected(request):
+   if request.method == "GET":
+      sc = SourceCode.objects.get(pk = request.GET['scId'])
+      '''if ConnectedUser.objects.filter(sc = sc, user = request.user).exists() != True:
+         cUser = ConnectedUser(user = request.user, userName = request.user.username, sc = sc, connectedTime = timezone.now(), disconnectedTime = timezone.now())
+         cUser.save()
+      else:
+         cUser = ConnectedUser.objects.get(sc = sc, user = request.user)
+         if (((timezone.now() - cUser.disconnectedTime).total_seconds() / 60) > 60 == True):
+            print("PASSED")
+            '''
+      cUser = ConnectedUser(user = request.user, userName = request.user.username, sc = sc, connectedTime = timezone.now(), disconnectedTime = timezone.now())
+      cUser.save()
+      return HttpResponse('Done')
+   else:
+      return HttpResponse('error')
+      
+# SAVE DISCONNECTED USER
+@login_required
+def userDisconnected(request):
+   if request.method == "GET":
+      sc = SourceCode.objects.get(pk = request.GET['scId'])
+      cUser = ConnectedUser.objects.filter(sc = sc, user = request.user)
+      #cUser.disconnectedTime = timezone.now()
+      cUser.delete()
+      return HttpResponse('Done')
+   else:
+      return HttpResponse('error')
+
+# GET CONNECTED USERS
+@login_required
+def getConnectedUsers(request):
+   if request.method == "GET":
+      sc = SourceCode.objects.get(pk = request.GET['scId'])
+      connectedUsers = serializers.serialize("json", ConnectedUser.objects.all().filter(sc=sc))
+      return HttpResponse(connectedUsers)
+   else:
+      return HttpResponse('error')
+
+# GET SPEAKER USER
+@login_required
+def getSpeakerUser(request):
+   if request.method == "GET":
+      sc = SourceCode.objects.get(pk = request.GET['scId'])
+      # change to sc = sc
+      speakerUser = serializers.serialize("json", ConnectedUser.objects.filter(user = request.user).order_by("connectedTime"))
+      return HttpResponse(speakerUser)
+   else:
+      return HttpResponse('error')
+
 
 # TESTING
 def trying(request):
    return render(request, "trying.html")
+

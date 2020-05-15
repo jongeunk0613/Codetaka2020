@@ -74,8 +74,13 @@
             <input id="play" type="checkbox">
             <label id="playIcon" class="fa fa-play-circle"></label>
          </label>
-         <!--<button id="menuBtnSpeaker"><i class = "fas fa-microphone-alt"></i></button>-->
          <div id="divider4" class="vl"></div>
+         <label id="menuBtnConnectedUsers">
+            <input id="users" type="checkbox">
+            <label id="usersIcon" class="fa fa-users"></label>
+         </label>
+         <div id="connectedUsersList">
+         </div>
       </div>
       <div id="secCode">
          <div id="showContent">
@@ -132,6 +137,7 @@
    var classUsername = "{{classUsername}}";
    var userid = "{{user.id}}";
    var username = "{{user.username}}";
+   var speakerStatus = false;
    //var scrollPos = 0;
    var htmlEntities = [
       [/&amp;/g, "&"],
@@ -144,6 +150,7 @@
    window.onload = prepare;
    
    function prepare() {
+      saveUser();
       highlightSC();
       loadComments();
       loadMessages();
@@ -187,15 +194,14 @@
 
    // CHANGE OR REQUEST SPEAKER
    document.getElementById("speaker").addEventListener('click', function(e){
-      if (username != classUsername){
+      if (speakerStatus == false){
          if (document.getElementById("speaker").checked == true){
             document.getElementById("speaker").checked = false;
             scSocket.send(JSON.stringify({
                'todoType': "speakerRequest",
                'fromU': username,
-               'toU': classUsername,
             }));
-            showNotification("Speaker request sent to the class owner.", "warnings");
+            showNotification("Speaker request sent to the current speaker.", "warnings");
          }
       }
    });
@@ -326,7 +332,18 @@
          }
       }
    };
-   
+
+   // OPEN CONNECTED USER LIST
+   document.getElementById("menuBtnConnectedUsers").addEventListener('click', function(e){
+      if ($("#connectedUsersList").hasClass("open") == true){
+         $("#connectedUsersList").removeClass("open");
+         $("#connectedUsersList").css("visibility", "hidden");
+      } else {
+         $("#connectedUsersList").addClass("open");
+         $("#connectedUsersList").css("visibility", "visible");
+      }
+   });
+
    // CREATE COMMENT
    document.getElementById("menuBtnCreateComment").addEventListener('click', function(e){
       
@@ -384,6 +401,46 @@
 
    // CHANNELS WEBSOCKET
    const scSocket = new WebSocket('ws://' + window.location.host + "/ws/sourcecode/" + "{{sc.id}}" + '/');
+   
+   // SAVE CONNECTED USER IN DB
+   function saveUser() {
+      $.ajax({
+         url: "{% url 'userConnected' %}",
+         type: "GET",
+         data:{
+            scId: scId,
+         },
+         success: function (response){
+            //alert("SUCCESS\n" + response);
+            
+            loadConnectedUsers();
+         },
+         error: function (response){
+            alert("ERROR\n" + response);
+         }
+      });
+   }
+
+   // SAVE DISCONNECTED USER IN DB
+   window.addEventListener('beforeunload', function(e){
+      e.preventDefault();
+      $.ajax({
+         url: "{% url 'userDisconnected' %}",
+         type: "GET",
+         data:{
+            scId: scId,
+         },
+         success: function (response){
+            //alert("SUCCESS\n" + response);
+         },
+         error: function (response){
+            alert("DISCONNECT ERROR\n" + response);
+         }
+      });
+   });
+
+   scSocket.onclose = function(e){
+   };
    
    // RECEIVE FROM WEBSOCKET
    scSocket.onmessage = function(e){
@@ -546,10 +603,6 @@
             
          }
       }
-   }
-
-   scSocket.onclose = function(e){
-      //alert("CLOSE");
    }
 
    // HIGHLIGHT SC AND DISPLAY
@@ -767,6 +820,65 @@
             }
          }
       }
+   }
+
+   // LOAD CONNECTED USERS
+   function loadConnectedUsers() {
+      getSpeakerUser();
+      $.ajax({
+         url: "{% url 'getConnectedUsers' %}",
+         type: "GET",
+         data:{
+            scId: scId,
+         },
+         success: function (response){
+            //alert("SUCCESS\n" + response);
+            var users = JSON.parse(response);
+            
+            for (var i = 0; i < users.length; i++){
+               var divUser = document.createElement("div");
+               divUser.id = `user${users[i]["fields"].user}`;
+               var userIcon = document.createElement("i");
+               if (users[i]["fields"].userName == username && speakerStatus == true){
+                  userIcon.className = "fas fa-user-check";
+                  userIcon.setAttribute("style", "color: #1e68a8;");
+               } else {
+                  userIcon.className = "fas fa-user-alt";
+               }
+               divUser.appendChild(userIcon);
+               var userName = document.createElement("p");
+               userName.innerHTML = users[i]["fields"].userName;
+               divUser.appendChild(userName);
+               document.getElementById("connectedUsersList").appendChild(divUser);
+            }
+         },
+         error: function (response){
+            alert("ERROR\n" + response);
+         }
+      });
+   }
+
+   // GET THE SPEAKER USER
+   function getSpeakerUser() {
+      $.ajax({
+         url: "{% url 'getSpeakerUser' %}",
+         type: "GET",
+         data:{
+            scId: scId,
+         },
+         success: function (response){
+            //alert("SUCCESS\n" + response);
+            var users = JSON.parse(response);
+            
+            var speakerUserId = users[0]["fields"].user;
+            if (userid == speakerUserId){
+               speakerStatus = true;
+            }
+         },
+         error: function (response){
+            alert("ERROR\n" + response);
+         }
+      });
    }
 
    //COMMENT OBJECT
@@ -1421,7 +1533,7 @@
       document.getElementById("choose").remove();
       scSocket.send(JSON.stringify({
          'todoType': "speakerRequestResponse",
-         'ownerU': toU,
+         'speakerU': toU,
          'requestU': fromU,
          'response': true,
       }));

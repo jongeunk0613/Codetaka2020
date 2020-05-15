@@ -278,19 +278,17 @@ thead tr{
    position: fixed;
    top: 56px;
    height: 100%;
-   width: 21%;
+   width: 20%;
    background-color: #d3e2eb;
    padding: 5px 10px 10px 10px;
    
    word-break: break-all;
 
    border-right: 1px solid #ddd;
-   
-   z-index: 4;
 }
 
 #fileList{
-   font-size: 18px;
+   font-size: 20px;
    font-weight: bold;
    font-family: Helvetica;
 }
@@ -347,12 +345,12 @@ thead tr{
 
 .sc {
    font-family: Helvetica;
-   font-size: 12px;
+   font-size: 13px;
 }
 
 .folder{
    font-family: Helvetica;
-   font-size: 12px;
+   font-size: 13px;
 }
 
 .sc:hover {
@@ -465,7 +463,7 @@ thead tr{
 
 #divider3{
    position: absolute;
-   right: 135px;
+   right: 168px;
    top: 5px;
 }
 
@@ -521,12 +519,6 @@ thead tr{
    padding: auto;
 }
 
-#divider4{
-   position: absolute;
-   right: 168px;
-   top: 5px;
-}
-
 #menuBtnPlay{
    position: absolute;
    right: 175px;
@@ -552,6 +544,65 @@ thead tr{
    color: #ccc;
 }
 
+#divider4{
+   position: absolute;
+   right: 202px;
+   top: 5px;
+}
+
+#menuBtnConnectedUsers{
+   position: absolute;
+   right: 208px;
+   top: 7px;
+}
+
+#users{
+   position: absolute;
+   opacity: 0;
+   cursor: pointer;
+   width: 20px;
+   height: 23px;
+}
+
+#users:checked + label{
+   color: #1e68a8;
+}
+
+#usersIcon{
+   background-color: transparent;
+   font-size: 20px;
+   border: none;
+   color: #ccc;
+}
+
+#connectedUsersList{
+   position: absolute;
+   right: 158px;
+   top: 35px;
+   width: 120px;
+   height: 100px;
+   background-color: #d3e2eb;
+   padding: 5px 0px 0px 8px;
+   overflow: auto;
+   border-radius: 4px;
+   visibility: hidden;
+}
+
+#connectedUsersList p {
+   margin: 0px;
+   font-size: 10px;
+}
+
+#connectedUsersList div{
+   display: flex;
+   flex-direction: row;
+}
+
+#connectedUsersList i{
+   font-size: 2px;
+   margin: 2px 3px 0px 0px;
+}
+
 /*-----CODE BODY-----*/
 #secCode{
    margin-top: 85px;
@@ -571,7 +622,7 @@ thead tr{
 #showLineNum{
    position:relative;
    /*overflow-y: scroll;*/
-   font-size: 10px;
+   font-size: 11px;
    z-index: -1;
    float:left;
    color: grey;
@@ -589,7 +640,7 @@ thead tr{
    width: 100%;
    left: 6%;
    white-space: pre;
-   font-size: 10px;
+   font-size: 11px;
    font-family: monospace;
 }
 

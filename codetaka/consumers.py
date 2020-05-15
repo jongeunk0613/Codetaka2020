@@ -170,18 +170,19 @@ class scConsumer(WebsocketConsumer):
          )
       elif (todoType == "speakerRequest") is True:
          fromU = data['fromU']
-         toU = data['toU']
+         
+         speakerUser = ConnectedUser.objects.filter(user = request.user).order_by("connectedTime")[0]
          
          async_to_sync(self.channel_layer.group_send)(
             self.sc_group_name, {
             'type': 'speakerRequest',
             'todoType': "speakerRequest",
             'fromU': fromU,
-            'toU': toU,
+            'toU': speakerUser.user_id.username,
             }
          )
       elif (todoType == "speakerRequestResponse") is True:
-         ownerU = data['ownerU']
+         speakerU = data['speakerU']
          requestU = data['requestU']
          response = data['response']
          
@@ -189,7 +190,7 @@ class scConsumer(WebsocketConsumer):
             self.sc_group_name, {
             'type': 'speakerRequestResponse',
             'todoType': "speakerRequestResponse",
-            'ownerU': ownerU,
+            'speakerU': speakerU,
             'requestU': requestU,
             'response': response,
             }
@@ -311,7 +312,7 @@ class scConsumer(WebsocketConsumer):
       # Send message to WebSocket
       self.send(text_data=json.dumps({
          'todoType': "speakerRequestResponse",
-         'ownerU': event['ownerU'],
+         'speakerU': event['speakerU'],
          'requestU': event['requestU'],
          'response': event['response'],
                                      }))
