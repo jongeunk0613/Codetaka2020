@@ -45,15 +45,6 @@
             {% endif %}
          </div>
          
-         <!--{% for folder in folderlist %}
-         <i class="fas fa-folder" id="folderIcon"></i>{{folder.name}}<br>
-            {% if sclist %}
-               {% for sc in sclist %}
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="openSC" href="{% url 'openSC' className sc.id %}">{{sc.name}}</a><br>
-               {% endfor %}
-            {% endif %}
-         {%endfor%}-->
-         
       </div>
       
       <div id="codeMenu">
@@ -111,7 +102,7 @@
          </div>
          <div id="chatBottom">
             <textarea id="chatInput"></textarea>
-            <input id="chatSubmit" type="button"></input>
+            <input id="chatSubmit" type="button" value="Send"></input>
          </div>
       </div>
    </div>
@@ -167,7 +158,7 @@
 
    // CREATE MENTION WHEN MOUSE UP + SAVE SOME INFO
    document.getElementById("code").addEventListener('mouseup', function(e){
-      if (window.getSelection().toString().length > 0 && e.target.closest("#code").id == "code"){
+      if (window.getSelection().toString().length > 0 && e.target.closest("#code").id == "code" && (e.target.className == "mentionCancelBtn") == false){
          seltxt = window.getSelection();
          anchorNode = seltxt.anchorNode;
          anchorOffset = anchorNode.parentNode.getAttribute('data-startIndex');
@@ -386,7 +377,40 @@
          } else {
             showNotification("There is a comment that is unfinished creating.", "warnings");
          }
-      } else {
+      } else if (creatingMention == true){
+         var mention = document.getElementById(`mention${lastMentionId}`);
+         creatingMention = false;
+         
+         var newComment = Object.create(Comment);
+         newComment.id = id;
+         id = id;
+         newComment.seltxt = mention.getAttribute("data-seltxt");
+         newComment.anchorNodeID = mention.getAttribute("data-anchorNodeID");
+         newComment.anchorOffset = mention.getAttribute("data-anchorOffset");
+         newComment.focusNodeID = mention.getAttribute("data-focusNodeID");
+         newComment.focusOffset = mention.getAttribute("data-focusOffset");
+         newComment.posX = mention.getAttribute("data-posX");
+         newComment.posY = mention.getAttribute("data-posY");
+         
+         var newCommentIcon = newComment.createComment();
+         document.getElementById("code").prepend(newCommentIcon);
+         $(`#${newCommentIcon.id}`).css({"position": "absolute", "left":`${newComment.posX}px`, "top": `${newComment.posY}px` });
+         $(`#${newCommentIcon.id}`).addClass("open");
+         $(`#${newCommentIcon.id}Form`).css("visibility","visible");
+         
+         var start = document.getElementById(newComment.anchorNodeID);
+         var end = document.getElementById(newComment.focusNodeID);
+         window.getSelection().setBaseAndExtent(start, 0, end, 1);
+         document.designMode = "on";
+         document.execCommand("HiliteColor", false, "#fffead");
+         document.designMode = "off";
+         window.getSelection().removeAllRanges();
+         
+         creatingComment = true;
+         
+         mention.remove();
+      }
+      else {
          showNotification("Select text to comment.", "warnings");
       }
    });
@@ -794,7 +818,7 @@
                var mtext = chat[i]["fields"].text;
                var mtimestamp = chat[i]["fields"].timestamp;
                
-               if (muserid == userid){
+               if (muser == userid){
                   var newMention = Object.create(Mention);
                   newMention.id = mid;
                   newMention.seltxt = mseltxt;
@@ -1309,42 +1333,73 @@
       focusOffset: 0,
       text: '',
       timestamp: "",
+      posX: 0,
+      posY: 0,
       showMention() {
          var id = this.id;
-         var seltxt = this.seltxt;
          var mention = this;
+         var manchorNodeID = this.anchorNodeID;
+         var mfocusNodeID = this.focusNodeID;
+         var mseltxt = this.seltxt;
+         var manchorOffset = this.anchorOffset;
+         var mfocusOffset = this.focusOffset;
+         var mtext = this.text;
+         var mposX = this.posX;
+         var mposY = this.posY;
          
-         document.getElementById("secMention").style.display = "block";
-         document.getElementById("chatLog").style.height = "75%";
-         
-         var mentionContent = document.createElement("div");
-         mentionContent.id = `mention${this.id}`;
+         var mentionForm = document.createElement("div");
+         mentionForm.className = "mentionForm";
+         mentionForm.id = `mention${this.id}`;
+         mentionForm.setAttribute("data-anchorNodeID", manchorNodeID);
+         mentionForm.setAttribute("data-focusNodeID", mfocusNodeID);
+         mentionForm.setAttribute("data-anchorOffset", manchorOffset);
+         mentionForm.setAttribute("data-focusOffset", mfocusOffset);
+         mentionForm.setAttribute("data-seltxt", mseltxt);
+         mentionForm.setAttribute("data-posX", mposX);
+         mentionForm.setAttribute("data-posY", mposY);
+         var mentionContent = document.createElement("textarea");
+         mentionContent.className = "mentionContent";
+         mentionContent.setAttribute("type", "text");
+         mentionContent.setAttribute("id", `mention${this.id}Content`);
+         mentionForm.appendChild(mentionContent);
          var mentionCancelBtn = document.createElement("input");
          mentionCancelBtn.className = "mentionCancelBtn";
-         mentionCancelBtn.id = `mention${this.id}CancelBtn`;
+         mentionCancelBtn.setAttribute("id", `mention${this.id}CancelBtn`);
          mentionCancelBtn.type = "button";
-         mentionCancelBtn.addEventListener("click", function(event){
+         mentionCancelBtn.addEventListener('click', function(event){
             event.preventDefault();
-            document.getElementById(`mention${id}`).remove();
-            document.getElementById("secMention").style.display = "none";
-            document.getElementById("chatLog").style.height = "84%";
-            creatingMention = false;
-         })
-         mentionCancelBtn.value = "x";
-         mentionContent.appendChild(mentionCancelBtn);
-         var mentionBackground = document.createElement("span");
-         mentionBackground.className = "mention_background";
-         mentionContent.appendChild(mentionBackground);
-         var mentionText = document.createElement("p");
-         mentionText.className = "mention_content";
-         mentionText.innerHTML = hljs.highlightAuto(seltxt.toString()).value;
-         mentionBackground.appendChild(mentionText);
+            
+            var start = document.getElementById(manchorNodeID);
+            var end = document.getElementById(mfocusNodeID);
+            window.getSelection().setBaseAndExtent(start, 0, end, 1);
+            document.designMode = "on";
+            document.execCommand("RemoveFormat", false, null);
+            document.designMode = "off";
+            window.getSelection().removeAllRanges();
+            
+            document.getElementById(mentionForm.id).remove();
+         });
+         mentionCancelBtn.setAttribute("value", "Cancel");
+         mentionForm.appendChild(mentionCancelBtn);
+         var mentionSendBtn = document.createElement("input");
+         mentionSendBtn.className = "mentionSendBtn";
+         mentionSendBtn.setAttribute("id", `mention${this.id}SendBtn`);
+         mentionSendBtn.type = "button";
+         mentionSendBtn.addEventListener('click', function(event){
+            event.preventDefault();
+            mtext = document.getElementById(mentionContent.id).value;
+            saveMention(mseltxt, mtext, manchorNodeID, manchorOffset, mfocusNodeID, mfocusOffset);
+         });
+         mentionSendBtn.setAttribute("value", "Send");
+         mentionForm.appendChild(mentionSendBtn);
          
-         document.getElementById("secMention").appendChild(mentionContent);
+         return mentionForm;
       }, incomingMention() {
          var id = this.id;
          var seltxt = this.seltxt;
          var text = this.text;
+         var manchorOffset = this.anchorOffset;
+         var mfocusOffset = this.focusOffset;
          var timestamp = this.timestamp;
          var year = timestamp.substring(0,4);
          var month = timestamp.substring(5,7);
@@ -1364,7 +1419,7 @@
          divReceivedMention.appendChild(divMentionBox);
          var indexInfo = document.createElement("p");
          indexInfo.className = "incoming_mention_index_info";
-         indexInfo.innerHTML = "L" + document.getElementById(this.anchorNodeID).getAttribute('data-lineNumber') + ":" + anchorOffset + " - " + "L" + document.getElementById(this.focusNodeID).getAttribute('data-lineNumber') + ":" + focusOffset;
+         indexInfo.innerHTML = "L" + document.getElementById(this.anchorNodeID).getAttribute('data-lineNumber') + ":" + manchorOffset + " - " + "L" + document.getElementById(this.focusNodeID).getAttribute('data-lineNumber') + ":" + mfocusOffset;
          divMentionBox.appendChild(indexInfo);
          var mentionCode = document.createElement("p");
          mentionCode.className = "incoming_mention_code";
@@ -1384,6 +1439,8 @@
          var id = this.id;
          var seltxt = this.seltxt;
          var text = this.text;
+         var manchorOffset = this.anchorOffset;
+         var mfocusOffset = this.focusOffset;
          var timestamp = this.timestamp;
          var year = timestamp.substring(0,4);
          var month = timestamp.substring(5,7);
@@ -1403,7 +1460,7 @@
          divSentMention.appendChild(divMentionBox);
          var indexInfo = document.createElement("p");
          indexInfo.className = "outgoing_mention_index_info";
-         indexInfo.innerHTML = "L" + document.getElementById(this.anchorNodeID).getAttribute('data-lineNumber') + ":" + anchorOffset + " - " + "L" + document.getElementById(this.focusNodeID).getAttribute('data-lineNumber') + ":" + focusOffset;
+         indexInfo.innerHTML = "L" + document.getElementById(this.anchorNodeID).getAttribute('data-lineNumber') + ":" + manchorOffset + " - " + "L" + document.getElementById(this.focusNodeID).getAttribute('data-lineNumber') + ":" + mfocusOffset;
          divMentionBox.appendChild(indexInfo);
          var mentionCode = document.createElement("p");
          mentionCode.className = "outgoing_mention_code";
@@ -1425,7 +1482,17 @@
    // CREATE MENTION
    function createMention() {
       if (lastMentionId != 0 && document.getElementById(`mention${lastMentionId}`) != null){
-         document.getElementById(`mention${lastMentionId}`).remove();
+         var last = document.getElementById(`mention${lastMentionId}`);
+         
+         var start = document.getElementById(last.getAttribute("data-anchorNodeID"));
+         var end = document.getElementById(last.getAttribute("data-focusNodeID"));
+         window.getSelection().setBaseAndExtent(start, 0, end, 1);
+         document.designMode = "on";
+         document.execCommand("RemoveFormat", false, null);
+         document.designMode = "off";
+         window.getSelection().removeAllRanges();
+         
+         last.remove();
       }
       
       creatingMention = true;
@@ -1439,7 +1506,20 @@
       newMention.anchorOffset = anchorOffset;
       newMention.focusNodeID = focusNode.parentNode.id;
       newMention.focusOffset = focusOffset;
-      newMention.showMention();
+      newMention.posX = x;
+      newMention.posY = y;
+      
+      var showNewMention = newMention.showMention();
+      document.getElementById("code").prepend(showNewMention);
+      $(`#${showNewMention.id}`).css({"position": "absolute", "left":`${newMention.posX}px`, "top": `${newMention.posY}px` });
+      
+      var start = document.getElementById(newMention.anchorNodeID);
+      var end = document.getElementById(newMention.focusNodeID);
+      window.getSelection().setBaseAndExtent(start, 0, end, 1);
+      document.designMode = "on";
+      document.execCommand("HiliteColor", false, "#fffead");
+      document.designMode = "off";
+      window.getSelection().removeAllRanges();
       
       mseltxt = newMention.seltxt;
       manchorNodeID = newMention.anchorNodeID;
@@ -1447,8 +1527,7 @@
    }
 
    // SAVE MENTION
-   function saveMention(seltxt, anchorNodeID, anchorOffset, focusNodeID, focusOffset) {
-      var mentionText = chatInput.value;
+   function saveMention(seltxt, text, anchorNodeID, anchorOffset, focusNodeID, focusOffset) {
       $.ajax(
       {
          url: "{% url 'saveMention' %}",
@@ -1460,12 +1539,21 @@
              anchorOffset: anchorOffset,
              focusNodeID: focusNodeID,
              focusOffset: focusOffset,
-             text: mentionText,
+             text: text,
          },
          success: function (response){
-            document.getElementById(`mention${lastMentionId}`).remove();
-            document.getElementById("secMention").style.display = "none";
-            document.getElementById("chatLog").style.height = "84%";
+            var last = document.getElementById(`mention${lastMentionId}`);
+            
+            var start = document.getElementById(last.getAttribute("data-anchorNodeID"));
+            var end = document.getElementById(last.getAttribute("data-focusNodeID"));
+            window.getSelection().setBaseAndExtent(start, 0, end, 1);
+            document.designMode = "on";
+            document.execCommand("RemoveFormat", false, null);
+            document.designMode = "off";
+            window.getSelection().removeAllRanges();
+            
+            last.remove();
+            
             creatingMention = false;
             //alert("SUCCESS\n" + response);
             
