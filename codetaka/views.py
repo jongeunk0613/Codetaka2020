@@ -153,13 +153,8 @@ def openSC(request, className, sc_id):
       nextID = Comment.objects.last().pk + 1
    else:
       nextID = -1
-      
-   chatHistory = []
-   chatHistory.extend(Message.objects.all().filter(sc=sc))
-   chatHistory.extend(Mention.objects.all().filter(scId=sc))
-   #chatHistory.order_by('timestamp')
    
-   print(ConnectedUser.objects.all().filter(sc=sc))
+   #print(ConnectedUser.objects.all().filter(sc=sc))
       
    context = {
       'user': request.user,
@@ -172,8 +167,8 @@ def openSC(request, className, sc_id):
       'range' : range(1, len(sc_content.split("\n"))+1),
       'nextId': nextID,
       'commentlist': commentlist,
-      'messagelist': serializers.serialize("json", Message.objects.all().filter(sc=sc)),
-      'chatHistory': serializers.serialize("json", chatHistory),
+      'messagelist': serializers.serialize("json", Message.objects.all().filter(sc=sc).order_by("-timestamp")),
+      'mentionlist': serializers.serialize("json", Mention.objects.all().filter(scId=sc).order_by("-timestamp")),
       'folderlist': Folder.objects.all().filter(ofClass = Class.objects.get(name=className)),
    }
    return render(request, 'mainpage.html', context)

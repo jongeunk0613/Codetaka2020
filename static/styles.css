@@ -958,7 +958,9 @@ pre {
    background: #8abfed none repeat scroll 0 0;
    border-radius: 3px;
    width: 99%;
+   min-width: 80px;
    padding-top: 10px;
+   /*border: 1px solid red;*/
 }
 
 .incoming_mention_index_info{
@@ -971,16 +973,14 @@ pre {
    vertical-align: top;
    word-break: normal;
    word-wrap: break-word;
-   
 }
 
 .incoming_mention_code{
    background: #f2f2f2 none repeat scroll 0 0;
    border-radius: 3px;
    font-size: 11px;
-   margin: auto;
+   margin: 0px 5px 0px 5px;
    padding: 5px 10px 5px 6px;
-   width: 90%;
    word-break: normal;
    word-wrap: break-word;
    white-space: pre;
@@ -1001,7 +1001,7 @@ pre {
 .outgoing_mention{
    overflow:hidden;
    margin-bottom: 10px;
-   max-width: 98;
+   max-width: 100%;
 }
 
 .sent_mention {
@@ -1019,9 +1019,8 @@ pre {
    background: #f2f2f2 none repeat scroll 0 0;
    border-radius: 3px;
    font-size: 11px;
-   margin: auto;
+   margin: 0px 5px 0px 5px;
    padding: 5px 10px 5px 6px;
-   width: 90%;
    word-break: normal;
    word-wrap: break-word;
    white-space: pre;
@@ -1033,7 +1032,7 @@ pre {
    border-radius: 3px;
    font-size: 10px;
    margin: 0;
-   padding: 0px 6px 0px 0px;
+   padding: 0px 6px 0px 5px;
    width: 100%;
    text-align: right;
    vertical-align: top;
@@ -1054,4 +1053,5 @@ pre {
    color: white;
 }
 
+/*-----DATE-----*/
 

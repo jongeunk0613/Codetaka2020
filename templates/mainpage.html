@@ -782,16 +782,54 @@
 
    // LOAD MESSAGES
    function loadMessages() {
-      var chat = {{chatHistory|safe}};
+      var messagelist = {{messagelist|safe}};
+      var mentionlist = {{mentionlist|safe}};
+      var messageCount = messagelist.length - 1;
+      var mentionCount = mentionlist.length - 1;
+      var lastDate = "";
+      var nextDate = "";
       
-      //chat.sort((a,b) => (a.["fields"].timestamp > b.["fields"].timestamp) ? 1 : -1);
       
-      if (chat.length > 0){
-         for (var i = 0; i < chat.length; i++){
-            if (chat[i]["fields"].type == "Message"){
-               var muserid = chat[i]["fields"].user;
-               var mcontent = chat[i]["fields"].content;
-               var mtimestamp = chat[i]["fields"].timestamp;
+      var todo = 0;
+      if (messageCount >= 0 && mentionCount >= 0){
+         todo = 1;
+         lastDate = new Date((messagelist[messageCount]["fields"].timestamp).substring(5,7) + " " + (messagelist[messageCount]["fields"].timestamp).substring(8,10) + " " + (messagelist[messageCount]["fields"].timestamp).substring(0,4));
+      } else if (messageCount > 0){
+         todo = 2;
+         lastDate = new Date((messagelist[messageCount]["fields"].timestamp).substring(5,7) + " " + (messagelist[messageCount]["fields"].timestamp).substring(8,10) + " " + (messagelist[messageCount]["fields"].timestamp).substring(0,4));
+      } else {
+         todo = 3;
+         lastDate = new Date((mentionlist[mentionCount]["fields"].timestamp).substring(5,7) + " " + (mentionlist[mentionCount]["fields"].timestamp).substring(8,10) + " " + (mentionlist[mentionCount]["fields"].timestamp).substring(0,4));
+      }
+      
+      while (messageCount >= 0 || mentionCount >= 0) {
+         switch(todo){
+            case 1:
+               //message는 있는데 mention는 없는 경우 시간 비교 처리
+               //CALCULATE WHICH ONE TODO
+               if (messageCount >= 0 && mentionCount >= 0){
+                  var messageTime = messagelist[messageCount]["fields"].timestamp;
+                  var mentionTime = mentionlist[mentionCount]["fields"].timestamp;
+                  
+                  if (messageTime > mentionTime){
+                     todo = 3;
+                  } else {
+                     todo = 2;
+                  }
+               } else if (messageCount >= 0){
+                  todo = 2;
+               } else {
+                  todo = 3;
+               }
+               break;
+            case 2:
+               //MESSAGE
+               var muserid = messagelist[messageCount]["fields"].user;
+               var mcontent = messagelist[messageCount]["fields"].content;
+               var mtimestamp = messagelist[messageCount]["fields"].timestamp;
+               
+               nextDate = new Date((messagelist[messageCount]["fields"].timestamp).substring(5,7) + " " + (messagelist[messageCount]["fields"].timestamp).substring(8,10) + " " + (messagelist[messageCount]["fields"].timestamp).substring(0,4));
+               lastDate = insertDate(lastDate, nextDate, mtimestamp);
                
                if (muserid == userid){
                   var newMessage = Object.create(Message);
@@ -807,16 +845,23 @@
                   newMessage.timestamp = mtimestamp;
                   newMessage.createIncomingMessage();
                }
-            } else if (chat[i]["fields"].type == "Mention"){
-               var muser = chat[i]["fields"].user;
-               var mid = chat[i]["pk"];
-               var mseltxt = chat[i]["fields"].seltxt;
-               var manchorNodeID = chat[i]["fields"].anchorNodeID;
-               var manchorOffset = chat[i]["fields"].anchorOffset;
-               var mfocusNodeID = chat[i]["fields"].focusNodeID;
-               var mfocusOffset = chat[i]["fields"].focusOffset;
-               var mtext = chat[i]["fields"].text;
-               var mtimestamp = chat[i]["fields"].timestamp;
+               messageCount -= 1;
+               todo = 1;
+               break;
+            case 3:
+               //MENTION
+               var muser = mentionlist[mentionCount]["fields"].user;
+               var mid = mentionlist[mentionCount]["pk"];
+               var mseltxt = mentionlist[mentionCount]["fields"].seltxt;
+               var manchorNodeID = mentionlist[mentionCount]["fields"].anchorNodeID;
+               var manchorOffset = mentionlist[mentionCount]["fields"].anchorOffset;
+               var mfocusNodeID = mentionlist[mentionCount]["fields"].focusNodeID;
+               var mfocusOffset = mentionlist[mentionCount]["fields"].focusOffset;
+               var mtext = mentionlist[mentionCount]["fields"].text;
+               var mtimestamp = mentionlist[mentionCount]["fields"].timestamp;
+               
+               nextDate = new Date((mentionlist[mentionCount]["fields"].timestamp).substring(5,7) + " " + (mentionlist[mentionCount]["fields"].timestamp).substring(8,10) + " " + (mentionlist[mentionCount]["fields"].timestamp).substring(0,4));
+               lastDate = insertDate(lastDate, nextDate, mtimestamp);
                
                if (muser == userid){
                   var newMention = Object.create(Mention);
@@ -841,9 +886,28 @@
                   newMention.focusOffset = mfocusOffset;
                   newMention.incomingMention();
                }
-            }
+               mentionCount -= 1;
+               todo = 1;
+               break;
          }
       }
+   }
+
+   // INSERT DATE INTO CHAT
+   function insertDate(lastDate, nextDate, mdate){
+      //DATEEEEEEEE COMPARISON STRINGGG!!!!
+      //HEREREEEEEE
+      // HIIIII
+      if (lastDate == nextDate){
+         var dateDiv = document.createElement("div");
+         dateDiv.className = "date";
+         var date = document.createElement("p");
+         date.innerHTML = mdate.substring(5,7) + " " + mdate.substring(8,10) + " " + mdate.substring(0,4);
+         dateDiv.appendChild(date);
+         document.getElementById("chatHistory").appendChild(dateDiv);
+         lastDate = nextDate;
+      }
+      return lastDate;
    }
 
    // LOAD CONNECTED USERS
@@ -1259,7 +1323,8 @@
          divSent.appendChild(content);
          var timedate = document.createElement("span");
          timedate.className = "time_date_out";
-         timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         //timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         timedate.innerHTML = hour +":"+ minute;
          divSent.appendChild(timedate);
          
          document.getElementById("chatHistory").appendChild(divOutgoing);
@@ -1287,7 +1352,8 @@
          divReceivedContent.appendChild(content);
          var timedate = document.createElement("span");
          timedate.className = "time_date_in";
-         timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         //timedate.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         timedate.innerHTML = hour +":"+ minute
          divReceivedContent.appendChild(timedate);
          
          document.getElementById("chatHistory").appendChild(divIncoming);
@@ -1431,7 +1497,8 @@
          divMentionBox.appendChild(mentionText);
          var timestamp = document.createElement("span");
          timestamp.className = "time_date_in";
-         timestamp.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         //timestamp.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         timestamp.innerHTML = hour +":"+ minute;
          divReceivedMention.appendChild(timestamp);
          
          document.getElementById("chatHistory").appendChild(divIncomingMention);
@@ -1472,7 +1539,8 @@
          divMentionBox.appendChild(mentionText);
          var timestamp = document.createElement("span");
          timestamp.className = "time_date_out";
-         timestamp.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         //timestamp.innerHTML = hour +":"+ minute + "   |   " + month + " " + day + " " + year;
+         timestamp.innerHTML = hour +":"+ minute;
          divSentMention.appendChild(timestamp);
          
          document.getElementById("chatHistory").appendChild(divOutgoingMention);
